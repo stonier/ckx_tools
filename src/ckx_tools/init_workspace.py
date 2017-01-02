@@ -42,7 +42,7 @@ def help_string():
  - 'yujin_init_workspace --set-default-track=groovy' : sets the currently set default track.\n \
  - 'yujin_init_workspace --track=hydro ecl ecl' : populate a workspace from our rosinstall database for hydro.\n \
  - 'yujin_init_workspace ecl https://raw.github.com/stonier/ecl_core/groovy-devel/ecl.rosinstall' : populate from uri.\n\n \
- Note that the track options only apply if you are using a rosinstall database (use yujin_tools_settings to configure)\n\n \
+ Note that the track options only apply if you are using a rosinstall database (use ckx_tools_settings to configure)\n\n \
  "
     return overview + instructions
 

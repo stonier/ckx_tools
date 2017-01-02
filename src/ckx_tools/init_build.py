@@ -32,7 +32,7 @@ def help_string():
  'yujin_init_build --no-default-underlay --toolchain=arm-pc-linux-gnueabi arm' prepares a build directory in ./arm with the specified toolchain module \n \
  'yujin_init_build --underlays=~/cslam/src/native;~/ecl/src/native .' prepares a build directory in ./arm with the specified toolchain module \n \
  \n \
- Underlays automatically add /opt/ros/`yujin_tools_settings --get-default-track` unless '--no-default-underlay' is specified (in which case you should\n \
+ Underlays automatically add /opt/ros/`ckx_tools_settings --get-default-track` unless '--no-default-underlay' is specified (in which case you should\n \
  ensure that the catkin sources are in your workspace or one of your underlays).\n \
 "
     return overview + instructions
@@ -48,7 +48,7 @@ def parse_arguments():
     #  even though we don't set a default value here, it later gets set as the default underlay if not present and --no-default-underlay is not true
     parser.add_argument('-u', '--underlays', action='store', default='', help='semi-colon list of catkin workspaces to utilise, priority given from front to back')
     default_underlay_group = parser.add_mutually_exclusive_group()
-    default_underlay_group.add_argument('-du', '--default-underlay', choices=settings.VALID_TRACKS, action='store', default=None, help='default the underlays to this track if catkin is not found [`yujin_tools_settings --get-default-track`]')
+    default_underlay_group.add_argument('-du', '--default-underlay', choices=settings.VALID_TRACKS, action='store', default=None, help='default the underlays to this track if catkin is not found [`ckx_tools_settings --get-default-track`]')
     default_underlay_group.add_argument('--track', choices=settings.VALID_TRACKS, dest='default_underlay', action='store', default=None, help='convenience equivalent for the --default-underlay option')
     default_underlay_group.add_argument('-n', '--no-default-underlay', action='store_true', help='do not automatically underlay with the default track setting [false]')
     parser.add_argument('-t', '--toolchain', action='store', default='', help='toolchain cmake module to load []')
@@ -191,7 +191,7 @@ def list_toolchains():
             console.pretty_print(" -- %s/" % family, console.cyan)
             console.pretty_println("%s" % platform, console.yellow)
     console.pretty_println("Custom:", console.bold)
-    toolchains = get_toolchains_or_platforms(os.path.join(settings.yujin_tools_home(), 'toolchains'))
+    toolchains = get_toolchains_or_platforms(os.path.join(settings.ckx_tools_home(), 'toolchains'))
     if toolchains:
         for family in toolchains:
             for platform in toolchains[family]:
@@ -211,7 +211,7 @@ def list_platforms():
             console.pretty_print(" -- %s/" % family, console.cyan)
             console.pretty_println("%s" % platform, console.yellow)
     console.pretty_println("Custom:", console.bold)
-    platforms = get_toolchains_or_platforms(os.path.join(settings.yujin_tools_home(), 'platforms'))
+    platforms = get_toolchains_or_platforms(os.path.join(settings.ckx_tools_home(), 'platforms'))
     if platforms:
         for family in platforms:
             for platform in platforms[family]:
@@ -296,7 +296,7 @@ def init_configured_build(default_underlay, build_dir_="./", source_dir_="./src"
         if default_underlay is not None and os.path.isfile(os.path.join("/opt/ros/%s" % default_underlay, 'share', 'catkin', 'cmake', 'toplevel.cmake')):
             catkin_toplevel = os.path.join("/opt/ros/%s" % default_underlay, 'share', 'catkin', 'cmake', 'toplevel.cmake')
             unused_catkin_python_path = os.path.join("/opt/ros/%s" % default_underlay, 'lib', 'python2.7', 'dist-packages')
-            console.pretty_println("No catkin found, adding the default underlay (use yujin_tools_settings to change) [/opt/ros/%s]" % default_underlay, console.cyan)
+            console.pretty_println("No catkin found, adding the default underlay (use ckx_tools_settings to change) [/opt/ros/%s]" % default_underlay, console.cyan)
             underlays_list.append("/opt/ros/%s" % default_underlay)
         else:
             raise RuntimeError("Could not find an underlying catkin installation.")
@@ -330,7 +330,7 @@ def init_configured_build(default_underlay, build_dir_="./", source_dir_="./src"
     ##########################
     if not toolchain_ == "":
         toolchains_dir = os.path.join(os.path.dirname(__file__), 'toolchains')
-        custom_toolchains_dir = os.path.join(settings.yujin_tools_home(), 'toolchains')
+        custom_toolchains_dir = os.path.join(settings.ckx_tools_home(), 'toolchains')
         tmp_list = toolchain_.split('/')
         if len(tmp_list) != 2:
             raise RuntimeError("Toolchain specification invalid, must be <family>/<tuple> [%s]" % toolchain_)
@@ -356,7 +356,7 @@ def init_configured_build(default_underlay, build_dir_="./", source_dir_="./src"
     ##########################
     platform_content = ""
     platforms_dir = os.path.join(os.path.dirname(__file__), 'platforms')
-    custom_platforms_dir = os.path.join(settings.yujin_tools_home(), 'platforms')
+    custom_platforms_dir = os.path.join(settings.ckx_tools_home(), 'platforms')
     if not platform_ == "default":
         tmp_list = platform_.split('/')
         if len(tmp_list) != 2:

@@ -8,7 +8,7 @@ android-core: [android-core-release]
 android-core-release: 'https://raw.github.com/rosjava/rosjava/hydro/android_core.rosinstall'
 android-core-master: 'https://raw.github.com/rosjava/rosjava/master/android_core.rosinstall'
 android-interactions: 'https://raw.github.com/rosjava/rosjava/master/android_interactions.rosinstall'
-catkin: 'https://raw.github.com/yujinrobot/yujin_tools/master/rosinstalls/catkin.rosinstall'
+catkin: 'https://raw.github.com/yujinrobot/ckx_tools/master/rosinstalls/catkin.rosinstall'
 cslam: 'https://bitbucket.org/yujinrobot/cslam/raw/hydro-devel/cslam.rosinstall'
 cslam_desktop: 'https://bitbucket.org/yujinrobot/cslam_desktop/raw/hydro-devel/cslam_desktop.rosinstall'
 ecl: 'https://raw.github.com/stonier/ecl_core/hydro-devel/ecl.rosinstall'

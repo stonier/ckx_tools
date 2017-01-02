@@ -3,8 +3,8 @@
 from __future__ import print_function
 
 import sys
-from yujin_tools import make_main
-import yujin_tools.console as console
+from ckx_tools import make_main
+import ckx_tools.console as console
 
 if __name__ == '__main__':
     try:

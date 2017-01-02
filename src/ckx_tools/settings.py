@@ -23,30 +23,30 @@ import console
 
 DEFAULT_TRACK = "indigo"
 VALID_TRACKS = ["groovy", "hydro", "indigo", "jade", "kinetic"]
-DEFAULT_ROSINSTALL_DATABASE = 'https://raw.github.com/yujinrobot/yujin_tools/master/rosinstalls'
+DEFAULT_ROSINSTALL_DATABASE = 'https://raw.github.com/yujinrobot/ckx_tools/master/rosinstalls'
 
 ##############################################################################
 # Methods
 ##############################################################################
 
 
-def yujin_tools_home():
+def ckx_tools_home():
     """
-    Get directory location of '.yujin_tools' directory (aka Yujin Tools home).
+    Get directory location of '.ckx_tools' directory (aka Yujin Tools home).
 
     @param env: override os.environ dictionary
     @type  env: dict
     @return: path to use use for log file directory
     @rtype: str
     """
-    home_dir = os.path.join(os.path.expanduser('~'), '.yujin_tools')
+    home_dir = os.path.join(os.path.expanduser('~'), '.ckx_tools')
     if not os.path.exists(home_dir):
         os.makedirs(home_dir)
     return home_dir
 
 
 def get_default_track():
-    filename = os.path.join(yujin_tools_home(), "track")
+    filename = os.path.join(ckx_tools_home(), "track")
     try:
         f = open(filename, 'r')
     except IOError:
@@ -60,7 +60,7 @@ def get_default_track():
 def set_default_track(track=DEFAULT_TRACK):
     if track not in VALID_TRACKS:
         raise RuntimeError("The track '%s' is not a valid track. Choose from %s\n" % (track, VALID_TRACKS))
-    filename = os.path.join(yujin_tools_home(), "track")
+    filename = os.path.join(ckx_tools_home(), "track")
     f = open(filename, 'w+')
     try:
         f.write(track.encode('utf-8'))
@@ -70,7 +70,7 @@ def set_default_track(track=DEFAULT_TRACK):
 
 
 def get_rosinstall_database_uri():
-    filename = os.path.join(yujin_tools_home(), "rosinstall_database")
+    filename = os.path.join(ckx_tools_home(), "rosinstall_database")
     try:
         f = open(filename, 'r')
     except IOError:
@@ -85,7 +85,7 @@ def set_rosinstall_database_uri(rosinstall_database=DEFAULT_ROSINSTALL_DATABASE)
       Set a uri for your rosinstall database.
     '''
     # could actually check that it is a valid uri though.
-    filename = os.path.join(yujin_tools_home(), "rosinstall_database")
+    filename = os.path.join(ckx_tools_home(), "rosinstall_database")
     f = open(filename, 'w+')
     try:
         f.write(rosinstall_database.encode('utf-8'))
@@ -101,10 +101,10 @@ def set_rosinstall_database_uri(rosinstall_database=DEFAULT_ROSINSTALL_DATABASE)
 def help_string():
     overview = '\nThis is a convenience script for configuring yujin tools settings.\n\n'
     instructions = " \
- - 'yujin_tools_settings --get-default-track' : return the currently configured default track.\n \
- - 'yujin_tools_settings --set-default-track hydro' : save this track as the default track in yujin_tools_home.\n \
- - 'yujin_tools_settings --get-rosinstall-database-uri' : return the currently configured rosinstall database uri.\n \
- - 'yujin_tools_settings --set-rosinstall-database-uri' : save this url as the default rosinstall database uri.\n \
+ - 'ckx_tools_settings --get-default-track' : return the currently configured default track.\n \
+ - 'ckx_tools_settings --set-default-track hydro' : save this track as the default track in ckx_tools_home.\n \
+ - 'ckx_tools_settings --get-rosinstall-database-uri' : return the currently configured rosinstall database uri.\n \
+ - 'ckx_tools_settings --set-rosinstall-database-uri' : save this url as the default rosinstall database uri.\n \
  "
     return overview + instructions
 

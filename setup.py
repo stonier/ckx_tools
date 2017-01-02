@@ -20,12 +20,12 @@ sys.path.insert(0, 'src')
 # to get that here *and* there and we don't exactly use
 # the module version anywhere, so keep it simple...
 # just here for now.
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 
-setup(name='yujin_tools',
+setup(name='ckx_tools',
       version= __version__,
-      packages=['yujin_tools', 'catkin_make'],
-      package_dir = {'yujin_tools':'src/yujin_tools', 'catkin_make':'src/catkin_make'},
+      packages=['ckx_tools', 'catkin_make'],
+      package_dir = {'ckx_tools':'src/ckx_tools', 'catkin_make':'src/catkin_make'},
       scripts = [
            'scripts/cfind',
            'scripts/avahi-browse-concerts',
@@ -45,14 +45,14 @@ setup(name='yujin_tools',
            'scripts/yujin_init_build',
            'scripts/yujin_make',
            'scripts/yujin_make_isolated',
-           'scripts/yujin_tools_settings',
+           'scripts/ckx_tools_settings',
            'scripts/yujin_list_dirs_by_size',
            'scripts/yujin_list_git_branches',
            'scripts/yujin_upload_deb',
            'scripts/rosdep-generator',
            # 'scripts/yujin_release',
       ],
-      package_data = {'yujin_tools': [
+      package_data = {'ckx_tools': [
            'cmake/*',
            'templates/init_build/.bashrc',
            'templates/init_build/konsole',
@@ -72,14 +72,14 @@ setup(name='yujin_tools',
       author = "Daniel Stonier",
       author_email = "d.stonier@gmail.com",
       maintainer='Daniel Stonier',
-      url = "http://pypi.python.org/pypi/yujin_tools",
-      download_url = "https://github.com/yujinrobot/yujin_tools.git",
-      keywords = ["Yujin Robot"],
+      url = "http://pypi.python.org/pypi/ckx_tools",
+      download_url = "https://github.com/yujinrobot/ckx_tools.git",
+      keywords = ["Catkin", "ROS"],
       classifiers = [
         "Programming Language :: Python",
         "License :: OSI Approved :: BSD License" ],
       description = "Utilities for yujin's development environment",
-      long_description = "Refer to the documentation at https://github.com/yujinrobot/yujin_tools.",
+      long_description = "Refer to the documentation at https://github.com/yujinrobot/ckx_tools.",
       license = "BSD",
       # not picked up by distutils, need to install setuptools above
       # but even then I'm not getting much happening

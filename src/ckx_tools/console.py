@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # License: BSD
-#   https://raw.github.com/yujinrobot/yujin_tools/master/LICENSE
+#   https://raw.github.com/yujinrobot/ckx_tools/master/LICENSE
 #
 
 ##############################################################################

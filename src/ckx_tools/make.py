@@ -47,7 +47,7 @@ def _parse_args(args=sys.argv[1:]):
     group.add_argument('-i', '--install', action='store_true', help='Run install step after making [false]')
     group.add_argument('--track', choices=settings.VALID_TRACKS, dest='default_underlay', action='store', default=None, help='convenience equivalent for the --default-underlay option')
     group.add_argument('--install-rosdeps-track', choices=settings.VALID_TRACKS, action='store', default=None, help='Install all rosdeps for the workspace sources and given track [None]')
-    group.add_argument('--install-rosdeps', action='store_true', help='Install all rosdeps for the workspace sources and track set by `yujin_tools_settings --get-default-track` [false]')
+    group.add_argument('--install-rosdeps', action='store_true', help='Install all rosdeps for the workspace sources and track set by `ckx_tools_settings --get-default-track` [false]')
     group.add_argument('-t', '--tests', action='store_true', help='Make tests [false]')
     group.add_argument('-r', '--run-tests', action='store_true', help='Run tests (does not build them) [false]')
     parser.add_argument('--strip', action='store_true', help='Strips binaries, only valid with --install')
