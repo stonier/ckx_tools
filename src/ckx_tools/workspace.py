@@ -34,14 +34,14 @@ except ImportError:
 def help_string():
     overview = 'This is a convenience script for auto-generating a catkin workspace.\n\n'
     instructions = " \
- - 'yujin_init_workspace ecl' : create an empty workspace in ./ecl.\n \
- - 'yujin_init_workspace ~/ecl' : create an empty workspace in ~/ecl.\n \
- - 'yujin_init_workspace ecl ecl.rosinstall' : populate a workspace from rosinstall file.\n \
- - 'yujin_init_workspace ecl ecl' : populate a workspace from our rosinstall database from the deafult track.\n \
- - 'yujin_init_workspace --get-default-track' : shows the currently set default track.\n \
- - 'yujin_init_workspace --set-default-track=groovy' : sets the currently set default track.\n \
- - 'yujin_init_workspace --track=hydro ecl ecl' : populate a workspace from our rosinstall database for hydro.\n \
- - 'yujin_init_workspace ecl https://raw.github.com/stonier/ecl_core/groovy-devel/ecl.rosinstall' : populate from uri.\n\n \
+ - 'ckx workspace ecl' : create an empty workspace in ./ecl.\n \
+ - 'ckx workspace ~/ecl' : create an empty workspace in ~/ecl.\n \
+ - 'ckx workspace ecl ecl.rosinstall' : populate a workspace from rosinstall file.\n \
+ - 'ckx workspace ecl ecl' : populate a workspace from our rosinstall database from the deafult track.\n \
+ - 'ckx workspace --get-default-track' : shows the currently set default track.\n \
+ - 'ckx workspace --set-default-track=kinetic' : sets the currently set default track.\n \
+ - 'ckx workspace --track=kinetic ecl ecl' : populate a workspace from our rosinstall database for hydro.\n \
+ - 'ckx workspace ecl https://raw.github.com/stonier/ecl_core/devel/ecl.rosinstall' : populate from uri.\n\n \
  Note that the track options only apply if you are using a rosinstall database (use ckx_tools_settings to configure)\n\n \
  "
     return overview + instructions
@@ -157,8 +157,8 @@ def merge(key, track, jobs):
       :param str track: the track to pull keys from (e.g. hydro, indigo)
       :param str jobs: number of parallel download jobs to spawn via wstool
     '''
-    if os.environ.get('YUJIN_WORKSPACE') is not None:
-        workspace_dir = os.environ.get('YUJIN_WORKSPACE')
+    if os.environ.get('CKX_WORKSPACE') is not None:
+        workspace_dir = os.environ.get('CKX_WORKSPACE')
     elif os.path.isdir(os.path.join(os.getcwdu(), 'src')):
         workspace_dir = os.getcwdu()
     elif os.path.isfile(os.path.join(os.getcwdu(), '.rosinstall')):
@@ -242,4 +242,4 @@ def print_details(workspace_dir, uri_list, lookup_name_list, lookup_track, looku
     else:
         console.pretty_println("empty workspace", console.yellow)
     console.pretty_println("**********************************************************************************", console.bold)
-    console.pretty_println("\nMerge additional source directories with `wstool` and configure parallel builds with 'yujin_init_build'.\n", console.cyan)
+    console.pretty_println("\nMerge additional source directories with `wstool` and configure parallel builds with 'ckx configure'.\n", console.cyan)

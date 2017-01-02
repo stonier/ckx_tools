@@ -181,7 +181,7 @@ def run_command(cmd, cwd, quiet=False, colorize=False, env=None):
             except Exception as e:
                 import traceback
                 traceback.print_exc()
-                print('<yujin_make> color formatting problem: ' + str(e),
+                print('<ckx build> color formatting problem: ' + str(e),
                       file=sys.stderr)
             out.write(line)
     proc.wait()

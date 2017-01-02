@@ -84,7 +84,7 @@ def validate_build_space(base_path):
     if os.path.exists(os.path.join(base_path, 'package.xml')):
         raise RuntimeError('Switch to a valid build directory (this one is a catkin package, i.e. contains a package.xml).')
 
-    # this will have been generated already by yujin_init_build
+    # this will have been generated already by ckx configure
     source_path = os.path.join(base_path, 'src')
     if os.path.exists(source_path):
         if os.path.islink(source_path):
@@ -102,7 +102,7 @@ def check_and_update_source_repo_paths(build_source_path):
       Check that the symbolic links we possible created in the build src directory still
       match the original source directory. If not, update.
     '''
-    f = open(os.path.join(build_source_path, '.yujin_init_build'), 'r')
+    f = open(os.path.join(build_source_path, '.ckx configure'), 'r')
     try:
         rel_path = f.read()
     finally:
@@ -124,19 +124,19 @@ def check_and_update_source_repo_paths(build_source_path):
         common.create_symlink(os.path.join(original_source_path, d), os.path.join(build_source_path, d), quiet=True)
 
 
-def insert_yujin_make_signature(yujin_make_root, devel_path):
+def insert_ckx_build_signature(ckx_build_root, devel_path):
     '''
-      Insert YUJIN_MAKE_ROOT=xxx into devel/setup.bash if the cmake process succeeded. This helps yujin_make
+      Insert CKX_BUILD_ROOT=xxx into devel/setup.bash if the cmake process succeeded. This helps 'ckx build'
       kickstart itself from anywhere in the future.
     '''
     setup_sh = open(os.path.join(devel_path, 'setup.sh'), 'a+')
     found = False
     for line in setup_sh:
-        if re.search('^export YUJIN_MAKE_ROOT', line):
+        if re.search('^export CKX_BUILD_ROOT', line):
             found = True
             break
     if not found:
-        setup_sh.write("export YUJIN_MAKE_ROOT=%s\n" % yujin_make_root)
+        setup_sh.write("export CKX_BUILD_ROOT=%s\n" % ckx_build_root)
 
 
 def install_rosdeps(base_path, source_path, rosdistro, no_color):
@@ -278,7 +278,7 @@ def make_main():
         except subprocess.CalledProcessError:
             return fmt('@{rf}Invoking @{boldon}"make cmake_check_build_system"@{boldoff} failed')
 
-    insert_yujin_make_signature(base_path, devel_path)
+    insert_ckx_build_signature(base_path, devel_path)
 
     # invoke make
     if not args.cmake_only:

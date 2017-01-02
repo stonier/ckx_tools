@@ -25,12 +25,12 @@ import settings
 def help_string():
     overview = 'This is a convenience script for auto-generating a catkin parallel build directory.\n\n'
     instructions = " \
- 'yujin_init_build .' prepares conventional ros build directories in ./ linked to sources in ./src \n \
- 'yujin_init_build .' prepares conventional ros build directories in ./ linked to sources in ./src \n \
- 'yujin_init_build --release release' prepares a release directory in ./release linked to sources in ./src \n \
- 'yujin_init_build debug ~/ecl/src' prepares a build directory in ./debug linked to sources in ~/ecl/src \n \
- 'yujin_init_build --no-default-underlay --toolchain=arm-pc-linux-gnueabi arm' prepares a build directory in ./arm with the specified toolchain module \n \
- 'yujin_init_build --underlays=~/cslam/src/native;~/ecl/src/native .' prepares a build directory in ./arm with the specified toolchain module \n \
+ 'ckx configure .' prepares conventional ros build directories in ./ linked to sources in ./src \n \
+ 'ckx configure .' prepares conventional ros build directories in ./ linked to sources in ./src \n \
+ 'ckx configure --release release' prepares a release directory in ./release linked to sources in ./src \n \
+ 'ckx configure debug ~/ecl/src' prepares a build directory in ./debug linked to sources in ~/ecl/src \n \
+ 'ckx configure --no-default-underlay --toolchain=arm-pc-linux-gnueabi arm' prepares a build directory in ./arm with the specified toolchain module \n \
+ 'ckx configure --underlays=~/cslam/src/native;~/ecl/src/native .' prepares a build directory in ./arm with the specified toolchain module \n \
  \n \
  Underlays automatically add /opt/ros/`ckx_tools_settings --get-default-track` unless '--no-default-underlay' is specified (in which case you should\n \
  ensure that the catkin sources are in your workspace or one of your underlays).\n \
@@ -158,9 +158,9 @@ def print_build_details(build_dir, source_dir, install_prefix, doc_prefix, build
     console.pretty_println("**********************************************************************************\n", console.bold)
 
 
-def write_yujin_init_build_configuration(build_source_dir, source_dir):
+def write_ckx_configuration(build_source_dir, source_dir):
     try:
-        f = open(os.path.join(build_source_dir, '.yujin_init_build'), 'w')
+        f = open(os.path.join(build_source_dir, '.ckx configure'), 'w')
         rel_path = os.path.relpath(source_dir, build_source_dir)
         f.write(rel_path.encode('utf-8'))
     finally:
@@ -264,7 +264,7 @@ def init_configured_build(default_underlay, build_dir_="./", source_dir_="./src"
         source_subdirectories = os.walk(source_dir).next()[1]
         for d in source_subdirectories:
             common.create_symlink(os.path.join(source_dir, d), os.path.join(build_source_dir, d))
-    write_yujin_init_build_configuration(build_source_dir, source_dir)
+    write_ckx_configuration(build_source_dir, source_dir)
 
     ##########################
     # Underlays
@@ -405,11 +405,11 @@ def clean(dir_to_be_cleaned, dir_sources):
         if not os.path.isfile(os.path.join(dir_to_be_cleaned, 'config.cmake')):
             console.logerror("Could not clean the current directory [build artifacts do not exist]")
             return
-        console.pretty_print("\nCleaning current directory of yujin_init_build artifacts : ", console.cyan)
+        console.pretty_print("\nCleaning current directory of ckx configuration artifacts : ", console.cyan)
         for f in [os.path.join(dir_to_be_cleaned, x) for x in ['config.cmake', 'eclipse', 'gnome-terminal', 'konsole', 'toolchain.cmake', '.bashrc', 'android-studio']]:
             if os.path.isfile(f):
                 os.remove(f)
-        for f in [os.path.join(dir_to_be_cleaned, dir_sources, x) for x in ['CMakeLists.txt', '.yujin_init_build']]:
+        for f in [os.path.join(dir_to_be_cleaned, dir_sources, x) for x in ['CMakeLists.txt', '.ckx_configure']]:
             if os.path.isfile(f):
                 os.remove(f)
         for d in [os.path.join(dir_to_be_cleaned, x) for x in ['build', 'devel']]:

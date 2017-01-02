@@ -20,8 +20,6 @@ help:
 	@echo "  deb_deps  : install the package builder dependencies (stdeb)."
 	@echo "  source_deb: source packaging (for ppas)"
 	@echo "  deb       : build the deb."
-	@echo "  upload_deb: upload to yujin's repository."
-	@echo "  release   : make pypi (if open), deb and upload together."
 	@echo "Other"
 	@echo "  clean     : clean build/dist directories."
 
@@ -64,11 +62,6 @@ register:
 
 pypi: 
 	python setup.py sdist upload
-
-upload_deb:
-	cd deb_dist; ../scripts/yujin_upload_deb python-yujin-tools
-
-release: pypi deb upload_deb
 
 clean:  clean_dist
 	-sudo rm -f install.record

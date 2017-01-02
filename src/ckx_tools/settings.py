@@ -23,7 +23,7 @@ import console
 
 DEFAULT_TRACK = "indigo"
 VALID_TRACKS = ["groovy", "hydro", "indigo", "jade", "kinetic"]
-DEFAULT_ROSINSTALL_DATABASE = 'https://raw.github.com/yujinrobot/ckx_tools/master/rosinstalls'
+DEFAULT_ROSINSTALL_DATABASE = 'https://raw.github.com/stonier/ckx_tools/devel/rosinstalls'
 
 ##############################################################################
 # Methods
@@ -99,7 +99,7 @@ def set_rosinstall_database_uri(rosinstall_database=DEFAULT_ROSINSTALL_DATABASE)
 
 
 def help_string():
-    overview = '\nThis is a convenience script for configuring yujin tools settings.\n\n'
+    overview = '\nThis is a convenience script for configuring ckx tools settings.\n\n'
     instructions = " \
  - 'ckx_tools_settings --get-default-track' : return the currently configured default track.\n \
  - 'ckx_tools_settings --set-default-track hydro' : save this track as the default track in ckx_tools_home.\n \

@@ -1,2 +1,2 @@
-# This is for cross-compiled dslam installations.
-- git: {local-name: yaml_cpp, version: indigo, uri: 'https://github.com/stonier/yaml_cpp_0_3.git'}
+# This is for cross-compiled installations.
+- git: {local-name: yaml_cpp, version: devel, uri: 'https://github.com/stonier/yaml_cpp_0_3.git'}
