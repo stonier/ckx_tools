@@ -42,26 +42,26 @@
 ###############################################################################
 
 # rosinstalls indexed multiply below
-_catkin: 'https://raw.github.com/yujinrobot/ckx_tools/devel/rosinstalls/indigo/catkin.rosinstall'
+_catkin: 'https://raw.github.com/stonier/ckx_tools/devel/rosinstalls/indigo/catkin.rosinstall'
 
 # ros core
 catkin: [_catkin]
-ecto-devel: 'https://raw.github.com/yujinrobot/ckx_tools/devel/rosinstalls/indigo/ecto-devel.rosinstall'
-ecto-stable: 'https://raw.github.com/yujinrobot/ckx_tools/devel/rosinstalls/indigo/ecto-stable.rosinstall'
-yaml_cpp: 'https://raw.github.com/yujinrobot/ckx_tools/devel/rosinstalls/indigo/yaml_cpp.rosinstall'
+ecto-devel: 'https://raw.github.com/stonier/ckx_tools/devel/rosinstalls/indigo/ecto-devel.rosinstall'
+ecto-stable: 'https://raw.github.com/stonier/ckx_tools/devel/rosinstalls/indigo/ecto-stable.rosinstall'
+yaml_cpp: 'https://raw.github.com/stonier/ckx_tools/devel/rosinstalls/indigo/yaml_cpp.rosinstall'
 
 # various
 ecl: [ecl-devel]
-ecl-devel: 'https://raw.github.com/yujinrobot/ckx_tools/devel/rosinstalls/indigo/ecl-devel.rosinstall'
-ecl-stable: 'https://raw.github.com/yujinrobot/ckx_tools/devel/rosinstalls/indigo/ecl-stable.rosinstall'
-hello: 'https://raw.github.com/yujinrobot/ckx_tools/devel/rosinstalls/indigo/hello.rosinstall'
-qt_ros: 'https://raw.github.com/yujinrobot/ckx_tools/devel/rosinstalls/indigo/qt_ros.rosinstall'
-respawn: 'https://raw.github.com/yujinrobot/ckx_tools/devel/rosinstalls/indigo/respawn.rosinstall'
+ecl-devel: 'https://raw.github.com/stonier/ckx_tools/devel/rosinstalls/indigo/ecl-devel.rosinstall'
+ecl-stable: 'https://raw.github.com/stonier/ckx_tools/devel/rosinstalls/indigo/ecl-stable.rosinstall'
+hello: 'https://raw.github.com/stonier/ckx_tools/devel/rosinstalls/indigo/hello.rosinstall'
+qt_ros: 'https://raw.github.com/stonier/ckx_tools/devel/rosinstalls/indigo/qt_ros.rosinstall'
+respawn: 'https://raw.github.com/stonier/ckx_tools/devel/rosinstalls/indigo/respawn.rosinstall'
 
 # kobuki/turtlebot
-kobuki: 'https://raw.github.com/yujinrobot/ckx_tools/devel/rosinstalls/indigo/kobuki.rosinstall'
-kobuki-core: 'https://raw.github.com/yujinrobot/ckx_tools/devel/rosinstalls/indigo/kobuki_core.rosinstall'
-turtlebot: 'https://raw.github.com/yujinrobot/ckx_tools/devel/rosinstalls/indigo/turtlebot.rosinstall'
+kobuki: 'https://raw.github.com/stonier/ckx_tools/devel/rosinstalls/indigo/kobuki.rosinstall'
+kobuki-core: 'https://raw.github.com/stonier/ckx_tools/devel/rosinstalls/indigo/kobuki_core.rosinstall'
+turtlebot: 'https://raw.github.com/stonier/ckx_tools/devel/rosinstalls/indigo/turtlebot.rosinstall'
 
 # rocon
 rocon: 'https://raw.github.com/robotics-in-concert/rocon/release/indigo/rocon.rosinstall'
