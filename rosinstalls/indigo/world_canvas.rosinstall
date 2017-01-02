@@ -1,4 +1,0 @@
-# World canvasframework
-- git: {local-name: world_canvas, uri: 'https://github.com/corot/world_canvas.git', version: master}
-- git: {local-name: world_canvas_libs, uri: 'https://github.com/corot/world_canvas_libs.git', version: master}
-- git: {local-name: world_canvas_msgs, uri: 'https://github.com/corot/world_canvas_msgs.git', version: master}
