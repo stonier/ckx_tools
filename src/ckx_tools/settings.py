@@ -21,7 +21,7 @@ import console
 # Constants
 ##############################################################################
 
-DEFAULT_TRACK = "indigo"
+DEFAULT_TRACK = "kinetic"
 VALID_TRACKS = ["groovy", "hydro", "indigo", "jade", "kinetic"]
 DEFAULT_ROSINSTALL_DATABASE = 'https://raw.github.com/stonier/ckx_tools/devel/rosinstalls'
 

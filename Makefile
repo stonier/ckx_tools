@@ -26,14 +26,6 @@ help:
 build:
 	python setup.py build
 
-# Another install method that might be better:
-#       sudo checkinstall python setup.py install
-install: distro
-	sudo python setup.py install --record install.record
-
-uninstall:
-	sudo rm -f ${UNINSTALL_FILES}
-
 deb_deps:
 	echo "Downloading dependencies"
 	sudo apt-get install python-stdeb
@@ -48,6 +40,14 @@ clean_dist:
 
 source_package:
 	python setup.py sdist
+
+# Another install method that might be better:
+#       sudo checkinstall python setup.py install
+install: source_package
+	python setup.py install --record install.record
+
+uninstall:
+	rm -f ${UNINSTALL_FILES}
 
 source_deb:
 	rm -rf dist deb_dist
