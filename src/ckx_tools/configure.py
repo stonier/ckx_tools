@@ -25,12 +25,12 @@ import settings
 def help_string():
     overview = 'This is a convenience script for auto-generating a catkin parallel build directory.\n\n'
     instructions = " \
- 'ckx configure .' prepares conventional ros build directories in ./ linked to sources in ./src \n \
- 'ckx configure .' prepares conventional ros build directories in ./ linked to sources in ./src \n \
- 'ckx configure --release release' prepares a release directory in ./release linked to sources in ./src \n \
- 'ckx configure debug ~/ecl/src' prepares a build directory in ./debug linked to sources in ~/ecl/src \n \
- 'ckx configure --no-default-underlay --toolchain=arm-pc-linux-gnueabi arm' prepares a build directory in ./arm with the specified toolchain module \n \
- 'ckx configure --underlays=~/cslam/src/native;~/ecl/src/native .' prepares a build directory in ./arm with the specified toolchain module \n \
+ 'ckx config .' prepares conventional ros build directories in ./ linked to sources in ./src \n \
+ 'ckx config .' prepares conventional ros build directories in ./ linked to sources in ./src \n \
+ 'ckx config --release release' prepares a release directory in ./release linked to sources in ./src \n \
+ 'ckx config debug ~/ecl/src' prepares a build directory in ./debug linked to sources in ~/ecl/src \n \
+ 'ckx config --no-default-underlay --toolchain=arm-pc-linux-gnueabi arm' prepares a build directory in ./arm with the specified toolchain module \n \
+ 'ckx config --underlays=~/cslam/src/native;~/ecl/src/native .' prepares a build directory in ./arm with the specified toolchain module \n \
  \n \
  Underlays automatically add /opt/ros/`ckx_tools_settings --get-default-track` unless '--no-default-underlay' is specified (in which case you should\n \
  ensure that the catkin sources are in your workspace or one of your underlays).\n \
@@ -160,7 +160,7 @@ def print_build_details(build_dir, source_dir, install_prefix, doc_prefix, build
 
 def write_ckx_configuration(build_source_dir, source_dir):
     try:
-        f = open(os.path.join(build_source_dir, '.ckx configure'), 'w')
+        f = open(os.path.join(build_source_dir, '.ckx_config'), 'w')
         rel_path = os.path.relpath(source_dir, build_source_dir)
         f.write(rel_path.encode('utf-8'))
     finally:

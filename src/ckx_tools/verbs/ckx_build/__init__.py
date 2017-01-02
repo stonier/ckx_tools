@@ -8,15 +8,23 @@
 ##############################################################################
 
 """
-This is the top-level namespace of the ckx_tools package. It provides
-functionality for the ckx scripts.
+Module implementing the 'ckx build' verb.
 """
 
 ##############################################################################
 # Imports
 ##############################################################################
 
-from .workspace import init_workspace
-from .configure import init_build
-from .make import make_main
-from .make_isolated import make_isolated_main
+from ckx_tools.argument_parsing import argument_preprocessor
+
+from .cli import main
+from .cli import prepare_arguments
+
+# This describes this command to the loader
+description = dict(
+    verb='build',
+    description="Builds a catkin workspace.",
+    main=main,
+    prepare_arguments=prepare_arguments,
+    argument_preprocessor=argument_preprocessor,
+)

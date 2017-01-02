@@ -251,4 +251,4 @@ def print_details(workspace_dir, uri_list, lookup_name_list, lookup_track, looku
     else:
         console.pretty_println("empty workspace", console.yellow)
     console.pretty_println("**********************************************************************************", console.bold)
-    console.pretty_println("\nMerge additional source directories with `wstool` and configure parallel builds with 'ckx configure'.\n", console.cyan)
+    console.pretty_println("\nMerge additional source directories with `wstool` and configure parallel builds with 'ckx config'.\n", console.cyan)

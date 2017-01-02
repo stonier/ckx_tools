@@ -8,15 +8,19 @@
 ##############################################################################
 
 """
-This is the top-level namespace of the ckx_tools package. It provides
-functionality for the ckx scripts.
+Implementation of the 'ckx build' verb.
 """
 
 ##############################################################################
 # Imports
 ##############################################################################
 
-from .workspace import init_workspace
-from .configure import init_build
-from .make import make_main
-from .make_isolated import make_isolated_main
+def prepare_arguments(parser):
+    parser.description = """\
+Build one or more packages in a catkin workspace.
+This invokes `CMake`, `make`, and optionally `make install` for either all
+or the specified packages in a catkin workspace.\
+"""
+
+def main(opts):
+    pass

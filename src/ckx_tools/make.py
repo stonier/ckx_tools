@@ -84,7 +84,7 @@ def validate_build_space(base_path):
     if os.path.exists(os.path.join(base_path, 'package.xml')):
         raise RuntimeError('Switch to a valid build directory (this one is a catkin package, i.e. contains a package.xml).')
 
-    # this will have been generated already by ckx configure
+    # this will have been generated already by ckx config
     source_path = os.path.join(base_path, 'src')
     if os.path.exists(source_path):
         if os.path.islink(source_path):
@@ -102,7 +102,7 @@ def check_and_update_source_repo_paths(build_source_path):
       Check that the symbolic links we possible created in the build src directory still
       match the original source directory. If not, update.
     '''
-    f = open(os.path.join(build_source_path, '.ckx configure'), 'r')
+    f = open(os.path.join(build_source_path, '.ckx_config'), 'r')
     try:
         rel_path = f.read()
     finally:

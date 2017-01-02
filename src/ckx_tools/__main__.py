@@ -8,15 +8,24 @@
 ##############################################################################
 
 """
-This is the top-level namespace of the ckx_tools package. It provides
-functionality for the ckx scripts.
+The primary entry point to the ckx scripts.
 """
 
 ##############################################################################
 # Imports
 ##############################################################################
 
-from .workspace import init_workspace
-from .configure import init_build
-from .make import make_main
-from .make_isolated import make_isolated_main
+import sys
+
+##############################################################################
+# Methods
+##############################################################################
+
+def main(args=None):
+    """
+    Primary entry point for the ckx scripts.
+    """
+    if args is None:
+        args = sys.argv[1:]
+
+    print("CKX entry point")
