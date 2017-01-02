@@ -42,7 +42,7 @@
 ###############################################################################
 
 # rosinstalls indexed multiply below
-_catkin: 'https://raw.github.com/stonier/ckx_tools/devel/rosinstalls/indigo/catkin.rosinstall'
+_catkin: 'https://raw.github.com/stonier/ckx_tools/devel/rosinstalls/kinetic/catkin.rosinstall'
 
 # ros core
 catkin: [_catkin]
