@@ -1,25 +1,13 @@
 #!/usr/bin/env python
-#from distutils.core import setup
-#import sys
 
-# Setuptools' sdist does not respect package_data
-# from setuptools import setup, find_packages
-# Distutils however, does not respect install_requires
-# Distutils is in python, setuptools is outside
-# Setuptools is now the defacto default though
-#try:
-#    from setuptools import setup
-#except ImportError:
-#    from distutils.core import setup
-from distutils.core import setup
-
-import sys
-sys.path.insert(0, 'src')
+from setuptools import setup
 
 # better to have this in the module somehow, but tricky
 # to get that here *and* there and we don't exactly use
 # the module version anywhere, so keep it simple...
 # just here for now.
+# import sys
+# sys.path.insert(0, 'src')
 __version__ = '0.1.1'
 
 setup(name='ckx_tools',

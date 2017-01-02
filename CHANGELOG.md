@@ -4,6 +4,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## [Unreleased]
 ### Added
+- distutils -> setuptools
 - refactored modules/scripts from yujin->ckx
 - graveyarded all non ckx scripts and old rosinstalls
 

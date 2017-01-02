@@ -41,8 +41,16 @@ clean_dist:
 source_package:
 	python setup.py sdist
 
-# Another install method that might be better:
-#       sudo checkinstall python setup.py install
+# Another install method that might be better since it lets
+# you develop and execute directly without an install step
+# (it puts your sources on the python path)
+#
+#       python setup.py develop
+#       python setup.py develop --uninstall
+#
+# https://github.com/stonier/ckx_tools/issues/2
+#
+
 install: source_package
 	python setup.py install --record install.record
 
