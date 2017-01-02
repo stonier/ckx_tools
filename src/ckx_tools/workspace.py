@@ -91,7 +91,11 @@ def populate_workspace(base_path, uri_list, parallel_jobs, do_init=True):
 
 
 def list_rosinstalls(track):
-    response = urllib2.urlopen('%s/%s.yaml' % (settings.get_rosinstall_database_uri(), track))
+    rosinstall_database_uri = '%s/%s.yaml' % (settings.get_rosinstall_database_uri(), track)
+    try:
+        response = urllib2.urlopen(rosinstall_database_uri)
+    except urllib2.URLError as e:
+        raise urllib2.URLError("rosinstall database uri not found [{0}]".format(rosinstall_database_uri))
     rosinstalls = yaml.load(response.read())
     sorted_rosinstalls = rosinstalls.keys()
     sorted_rosinstalls.sort()
@@ -103,6 +107,11 @@ def list_rosinstalls(track):
 def get_rosinstall_database(track):
     lookup_track = track
     lookup_database = settings.get_rosinstall_database_uri()
+    rosinstall_database_uri = '%s/%s.yaml' % (lookup_database, lookup_track)
+    try:
+        response = urllib2.urlopen(rosinstall_database_uri)
+    except urllib2.URLError as e:
+        raise urllib2.URLError("rosinstall database uri not found [{0}]".format(rosinstall_database_uri))
     response = urllib2.urlopen('%s/%s.yaml' % (lookup_database, track))
     rosinstall_database = yaml.load(response.read())
     return rosinstall_database, lookup_track, lookup_database
