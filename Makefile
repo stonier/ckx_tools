@@ -1,4 +1,3 @@
-VERSION=`./setup.py --version`
 FILE_EXISTS:=$(wildcard install.record)
 ifeq ($(strip $(FILE_EXISTS)),)
     UNINSTALL_FILES:=
@@ -8,25 +7,29 @@ endif
  
 
 help:
+	@echo "Development Environment"
+	@echo "  source setup.bash"
+	@echo ""
 	@echo "Local Build"
-	@echo "  build     : build the python package."
-	@echo "  install   : install the python package into /usr/local."
-	@echo "  uninstall : uninstall the python package from /usr/local."
+	@echo "  build              : build the python package."
+	@echo "  install            : install the python package into /usr/local."
+	@echo "  uninstall          : uninstall the python package from /usr/local."
 	@echo "Pypi package"
-	@echo "  register  : register the package with PyPI."
-	@echo "  distro    : build the distribution tarball."
-	@echo "  pypi      : upload the package to PyPI."
+	@echo "  register           : register the package with PyPI."
+	@echo "  distro             : build the distribution tarball."
+	@echo "  pypi               : upload the package to PyPI."
 	@echo "Deb package"
-	@echo "  deb_deps  : install the package builder dependencies (stdeb)."
-	@echo "  source_deb: source packaging (for ppas)"
-	@echo "  deb       : build the deb."
-	@echo "Other"
-	@echo "  clean     : clean build/dist directories."
+	@echo "  build_dependencies : install the package builder dependencies (stdeb)."
+	@echo "  source_deb         : source packaging (for ppas)"
+	@echo "  deb                : build the deb."
+	@echo "Clean"
+	@echo "  clean_dist         : clean build/dist temporaries (no sudo)"
+	@echo "  clean              : clean everything (sudo required)"
 
 build:
 	python setup.py build
 
-deb_deps:
+build_dependencies:
 	echo "Downloading dependencies"
 	sudo apt-get install python-stdeb
 
@@ -40,16 +43,6 @@ clean_dist:
 
 source_package:
 	python setup.py sdist
-
-# Another install method that might be better since it lets
-# you develop and execute directly without an install step
-# (it puts your sources on the python path)
-#
-#       python setup.py develop
-#       python setup.py develop --uninstall
-#
-# https://github.com/stonier/ckx_tools/issues/2
-#
 
 install: source_package
 	python setup.py install --record install.record
