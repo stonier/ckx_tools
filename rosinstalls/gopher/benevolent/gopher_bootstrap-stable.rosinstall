@@ -1,0 +1,29 @@
+# == Overview ==
+#
+# Software for bootstrapping robot/simulation/concert/desktop software, no direct hardware dependencies here!
+
+# Rocon
+- git: { local-name: 'rocon_multimaster',     version: 'release/0.8-indigo-gopher', uri: 'https://github.com/robotics-in-concert/rocon_multimaster.git'}
+- git: { local-name: 'rocon_tools',           version: 'release/0.4-indigo-gopher', uri: 'https://github.com/robotics-in-concert/rocon_tools.git'}
+- git: { local-name: 'rocon_app_platform',    version: 'release/0.9-indigo-gopher ', uri: 'https://github.com/robotics-in-concert/rocon_app_platform.git'}
+
+# Gopher
+- git: { local-name: 'gopher_rapps',          version: 'release/0.2-indigo', uri: 'https://bitbucket.org/yujinrobot/gopher_rapps.git'}
+- git: { local-name: 'gopher_common',         version: 'release/0.5-indigo', uri: 'https://bitbucket.org/yujinrobot/gopher_common.git'}
+- git: { local-name: 'gopher_web_ui',         version: '0.3.0',              uri: 'https://bitbucket.org/yujinrobot/gopher_web_ui.git'}
+- git: { local-name: 'gopher_crazy_hospital', version: 'release/0.2-indigo', uri: 'https://bitbucket.org/yujinrobot/gopher_crazy_hospital.git'}
+- git: { local-name: 'py_trees_suite',        version: 'release/0.3-indigo', uri: 'https://github.com/stonier/py_trees_suite'}
+
+# Rostful and Celeros
+- git: { local-name: 'rostful',               version: '0.0.10',             uri: 'https://github.com/asmodehn/rostful.git'}
+- git: { local-name: 'celeros',               version: '0.0.4',              uri: 'https://github.com/asmodehn/celeros.git'}
+- git: { local-name: 'pyros',                 version: '0.0.9',              uri: 'https://github.com/asmodehn/pyros.git'}
+
+# Environment Integrations
+- git: { local-name: 'elevator_interactions', version: 'release/0.2-indigo', uri: 'https://bitbucket.org/yujinrobot/elevator_interactions.git'}
+
+# until fixed version of audio has been released
+- git: { local-name: 'audio_common',          version: 'dcbd4260',           uri: 'https://github.com/yujinrobot/audio_common.git'}
+# until I know why the 1.8.10 deb version doesn't properly unload while the 1.8.10 source version does (debug vs release?)
+- git: { local-name: 'diagnostics',           version: '1.8.10',             uri: 'https://github.com/ros/diagnostics.git'}
+

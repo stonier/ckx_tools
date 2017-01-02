@@ -1,0 +1,9 @@
+# == Overview ==
+#
+# Software for testing, simulation, bootstrapping robot/simulation/concert/desktop software, no direct hardware dependencies here!
+#
+# Bundling everything in gopher_desktop for now, but this could be split up.
+- git: { local-name: 'gopher_desktop', version: 'release/0.5-indigo',        uri: 'https://bitbucket.org/yujinrobot/gopher_desktop.git'}
+- git: { local-name: 'rocon_qt_gui',   version: 'release/0.9-indigo-gopher', uri: 'https://github.com/robotics-in-concert/rocon_qt_gui.git'}
+- git: { local-name: 'rqt_wrapper',    version: 'release/0.1-indigo',        uri: 'https://github.com/stonier/rqt_wrapper.git'}
+- git: { local-name: 'rqt_py_trees',   version: 'release/0.1-indigo',        uri: 'https://github.com/stonier/rqt_py_trees.git'}

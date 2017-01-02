@@ -1,0 +1,393 @@
+#!/usr/bin/env bash
+
+###########################
+# Colours
+###########################
+
+export BOLD="\e[1m"
+
+export CYAN="\e[36m"
+export GREEN="\e[32m"
+export YELLOW="\e[33m"
+export RED="\e[31m"
+
+export RESET="\e[0m"
+
+###########################
+# Global Functions
+###########################
+
+function contains () {
+  local e
+  for e in "${@:2}"; do [[ "$e" == "$1" ]] && return 0; done
+  return 1
+}
+
+show_help ()
+{
+  echo ""
+  echo "This downloads or updates the groot sources into /opt/groot."
+  echo ""
+  echo "    Usage:"
+  echo "        groot_sources <required-options> <options>"
+  echo "        groot_sources <required-options> <options> <space separated list of repos>"
+  echo ""
+  echo "    Repos: ecto ecl messages dslam navi bootstrap gopher concert desktop"
+  echo ""
+  echo "    Required Option (one of):"
+  echo "        --stable                                        : work with the stable sources/binaries"
+  echo "        --devel                                         : work with the devel sources/binaries"
+  echo ""
+  echo "    Options:"
+  echo "        --help                                          : show this help message"
+  echo "        --jobs=<n>                                      : parallelise downloads (default is 5)"
+  echo "        --list                                          : list repo details"
+  echo "        --delete                                        : delete workspaces"
+  echo "        --update                                        : run wstool update on each workspace"
+  echo "        --status                                        : run wstool status on each workspace"
+  echo "        --make                                          : run yujin_make on each workspace"
+  echo "        --branches                                      : show what branches are used in each workspace"
+  echo "        -d, --source-directory=<directory>              : specify custom source directory"
+  echo ""
+  echo "    Admin Options:"
+  echo "        --install                                       : set the install location to /opt/yujin/amd64/xxx for all workspaces"
+  echo ""
+  exit 0
+}
+
+###########################
+# PreConfigured Defaults
+###########################
+
+JOBS=5
+
+###########################
+# Command Line
+###########################
+
+for i in "$@"
+do
+case $i in
+    --help)
+    SHOW_HELP=1
+    shift
+    ;;
+    --delete)
+    DELETE=1
+    shift
+    ;;
+    --install)
+    INSTALL_STRING="--install=/opt/yujin/indigo"
+    shift
+    ;;
+    --update)
+    UPDATE=1
+    shift
+    ;;
+    --make)
+    MAKE=1
+    shift
+    ;;
+    --list)
+    SHOW_REPOS=1
+    shift
+    ;;
+    --status)
+    SHOW_STATUS=1
+    shift
+    ;;
+    --branches)
+    SHOW_BRANCHES=1
+    shift
+    ;;
+    --stable)
+    STABLE=1
+    shift
+    ;;
+    --devel)
+    DEVEL=1
+    shift
+    ;;
+    -j=*|--jobs=*)
+    JOBS="${i#*=}"
+    shift
+    ;;
+    -d=*|--source-directory=*)
+    USE_CUSTOM_SOURCE_DIRECTORY=1
+    CUSTOM_SOURCE_DIRECTORY="${i#*=}"
+    shift
+    ;;
+    *)
+       # unknown option
+    ;;
+esac
+done
+
+###########################
+# Early Aborts
+###########################
+
+if [ ! -z "$SHOW_HELP" ]; then
+  show_help
+  exit 0
+fi
+
+if [ ! -z "${ROS_MASTER_URI}" ]; then
+  echo "    This is a ros environment, you must run this script from a non-ros environment (new shell)."
+  exit 1
+fi
+
+if [ -z "$STABLE" ] && [ -z "$DEVEL" ]; then
+  echo -e ""
+  echo -e "${RED}    You must set one of either --stable or --devel.${RESET}"
+  echo -e "${RED}        Run with --help for more information.${RESET}"
+  echo -e ""
+  exit 1
+fi
+
+###########################
+# Variables
+###########################
+
+if [ ! -z "$STABLE" ]; then
+  RELEASE="stable"
+  WS="stable_ws"
+else
+  RELEASE="devel"
+  WS="ws"
+fi
+
+if [ ! -z "$USE_CUSTOM_SOURCE_DIRECTORY" ]; then
+  GROOT=$CUSTOM_SOURCE_DIRECTORY
+else
+  GROOT=/opt/groot
+fi
+
+ALL_REPOS=("ecto" "ecl" "messages" "dslam" "navi" "bootstrap" "gopher" "concert" "desktop")
+declare -A ALL_REPO_KEYS
+declare -A ALL_UNDERLAYS
+
+ALL_REPO_KEYS=( ["ecto"]="ecto-${RELEASE}" ["ecl"]="ecl-${RELEASE}" ["messages"]="gopher_messages-${RELEASE}" ["bootstrap"]="gopher_bootstrap-${RELEASE}" ["concert"]="gopher_concert-${RELEASE}" ["navi"]="gopher_navigation-${RELEASE}" ["dslam"]="gopher_dslam-${RELEASE}" ["gopher"]="gopher-${RELEASE}" ["desktop"]="gopher_desktop-${RELEASE}" )
+
+YUJIN_BINARIES=/opt/yujin/amd64/indigo-${RELEASE}
+
+ECL_CLOUD="${GROOT}/ecl_${WS}/devel"
+MSG_CLOUD="${GROOT}/messages_${WS}/devel;${ECL_CLOUD}"
+ECTO_CLOUD="${GROOT}/ecl_${WS}/devel;${GROOT}/ecto_${WS}/devel"
+DSLAM_CLOUD="${GROOT}/dslam_${WS}/devel;${MSG_CLOUD};${ECTO_CLOUD}"
+NAVI_CLOUD="${GROOT}/navi_${WS}/devel;${DSLAM_CLOUD}"
+BOOTSTRAP_CLOUD="${GROOT}/bootstrap_${WS}/devel;${NAVI_CLOUD}"
+SOFTWARE_CLOUD="${GROOT}/concert_${WS}/devel;${BOOTSTRAP_CLOUD}"
+
+ALL_UNDERLAYS=( ["ecto"]="${YUJIN_BINARIES}" ["ecl"]="${YUJIN_BINARIES}" ["messages"]="${ECL_CLOUD};${YUJIN_BINARIES}" ["dslam"]="${ECTO_CLOUD};${MSG_CLOUD};${YUJIN_BINARIES}" ["navi"]="${DSLAM_CLOUD};${YUJIN_BINARIES}" ["bootstrap"]="${NAVI_CLOUD};${YUJIN_BINARIES}" ["concert"]="${BOOTSTRAP_CLOUD};${YUJIN_BINARIES}" ["gopher"]="${BOOTSTRAP_CLOUD};${YUJIN_BINARIES}" ["desktop"]="${SOFTWARE_CLOUD};${YUJIN_BINARIES}")
+
+REPOS=()
+
+if [ "$#" -gt 0 ]; then
+  for var in "$@"
+  do
+    REPOS+=($var)
+  done
+else
+  for repo in "${ALL_REPOS[@]}"
+  do
+    REPOS+=($repo)
+  done
+fi
+
+###########################
+# Functions
+###########################
+
+echo_invalid_workspace()
+{
+  echo -e "${RED}[error] skipping '${1}', it is not a valid workspace [${ALL_REPOS[@]}]${RESET}"
+}
+
+show_repos ()
+{
+  echo ""
+  for repo in "${ALL_REPOS[@]}"
+  do
+    echo -e "${BOLD}${repo}${RESET}"
+    echo -e "${CYAN}  rosinstall key:${RESET}${YELLOW} ${ALL_REPO_KEYS[${repo}]}${RESET}"
+    echo -e "${CYAN}  underlays     :${RESET}${YELLOW} ${ALL_UNDERLAYS[${repo}]}${RESET}"
+  done
+  echo ""
+}
+
+download_sources ()
+{
+  echo "Downloading groot."
+  for repo in "${REPOS[@]}"; do
+  #for ((i=0;i<${#REPOS[@]};++i)); do
+    cd ${GROOT}
+    if contains ${repo} ${ALL_REPOS[@]}; then
+      if [ -d "${GROOT}/${repo}_${WS}" ]; then
+	echo "  Workspace ${GROOT}/${repo}_${WS} already exists, skipping, remove manually or use --delete."
+      else
+	echo "  Downloading ${repo}."
+	yujin_init_workspace -j${JOBS} ${repo}_${WS} ${ALL_REPO_KEYS[${repo}]}
+	cd ${GROOT}/${repo}_${WS}
+	echo "  Configuring ${repo}."
+	yujin_init_build --underlays="${ALL_UNDERLAYS[${repo}]}" ${INSTALL_STRING} .
+      fi
+    else
+      echo_invalid_workspace ${repo}
+    fi
+  done
+  echo ""
+  echo -e "${BOLD}You may need an additional 'groot_binaries --${RELEASE} --install-rosdeps' if there are new dependencies.${RESET}"
+  echo ""
+}
+
+update_sources ()
+{
+  for ((i=0;i<${#REPOS[@]};++i)); do
+    repo=${REPOS[i]}
+    repo_key=${ALL_REPO_KEYS[${repo}]}
+    if contains ${repo} ${ALL_REPOS[@]}; then
+      if [ ! -d "${GROOT}/${repo}_${WS}" ]; then
+        echo -e "${YELLOW}[ warn] skipping ${GROOT}/${repo}_${WS}, not found${RESET}"
+      else
+        echo -e "${GREEN}[ info] updating ${GROOT}/${repo}_${WS}${RESET}"
+        echo "  Cleaning *.pyc files from ${GROOT}/${repo}_${WS}"
+        find ${GROOT}/${repo}_${WS} -name \*.pyc -delete
+        cd ${GROOT}/${repo}_${WS}
+        echo "  Updating ${repo} from ${repo_key}"
+        echo ""
+        echo "       yujin_init_workspace -j${JOBS} --merge ${repo_key}"
+        echo ""
+        yujin_init_workspace -j${JOBS} --merge ${repo_key}
+      fi
+    else
+      echo_invalid_workspace ${repo}
+    fi
+  done
+  echo ""
+  echo -e "${BOLD}You may need an additional 'groot_binaries --${RELEASE} --install-rosdeps' if there are new dependencies.${RESET}"
+  echo ""
+}
+
+make_sources ()
+{
+  for ((i=0;i<${#REPOS[@]};++i)); do
+    repo=${REPOS[i]}
+    repo_key=${ALL_REPO_KEYS[${repo}]}
+    if contains ${repo} ${ALL_REPOS[@]}; then
+      if [ ! -d "${GROOT}/${repo}_${WS}" ]; then
+        echo -e "${YELLOW}[ warn] skipping ${GROOT}/${repo}_${WS}, not found${RESET}"
+      else
+        echo -e "${GREEN}[ info] building ${GROOT}/${repo}_${WS}${RESET}"
+        cd ${GROOT}/${repo}_${WS}
+        yujin_make
+      fi
+    else
+      echo_invalid_workspace ${repo}
+    fi
+  done
+  echo ""
+  echo -e "${BOLD}You may need an additional 'groot_binaries --${RELEASE} --install-rosdeps' if there are new dependencies.${RESET}"
+  echo ""
+}
+
+show_branches ()
+{
+  echo "******************************************************"
+  echo "* Showing branch information of repositories in groot."
+  echo "******************************************************"
+  for repo in ${REPOS[*]}; do
+    if [ -d "${GROOT}/${repo}_${WS}/src" ]; then
+      cd ${GROOT}/${repo}_${WS}/src
+      echo "****************************"
+      echo "* ${repo}"
+      echo "****************************"
+      yujin_list_git_branches
+    fi
+  done
+}
+
+show_status ()
+{
+  echo "Showing status of repos in groot."
+  for repo in ${REPOS[*]}; do
+    if [ -d "${GROOT}/${repo}_${WS}/src" ]; then
+      echo "  Status of ${repo}:"
+      cd ${GROOT}/${repo}_${WS}/src
+      wstool status
+    fi
+  done
+}
+
+mkdir_groot ()
+{
+  if [ ! -d "${GROOT}" ]; then
+    mkdir ${GROOT}
+    if [ "$?" == "1" ]; then
+      echo "Could not create the groot directory (check permissions)."
+      exit 1
+    fi
+  fi
+}
+
+delete_sources ()
+{
+  echo "Deleting workspaces."
+  for repo in "${REPOS[@]}"; do
+    if [ -d "${GROOT}/${repo}_${WS}" ]; then
+      echo "  Deleting ${GROOT}/${repo}_${WS}."
+      rm -rf ${GROOT}/${repo}_${WS}
+    fi
+  done
+}
+
+###########################
+# Workers
+###########################
+
+if [ ! -z "$SHOW_REPOS" ]; then
+  show_repos
+  exit 0
+fi
+
+if [ ! -z "$SHOW_STATUS" ]; then
+  if [ ! -d "${GROOT}" ]; then
+    echo "No groot workspaces found."
+  else
+    show_status
+  fi
+  exit 0
+fi
+
+if [ ! -z "$SHOW_BRANCHES" ]; then
+  if [ ! -d "${GROOT}" ]; then
+    echo "No groot workspaces found."
+  else
+    show_branches
+  fi
+  exit 0
+fi
+
+if [ ! -z "$DELETE" ]; then
+  delete_sources
+  exit 0
+fi
+
+if [ ! -z "${UPDATE}" ]; then
+  echo ""
+  update_sources
+  if [ ! -z "${MAKE}" ]; then
+    make_sources
+  fi
+  exit 0
+fi
+
+if [ ! -z "${MAKE}" ]; then
+  echo ""
+  make_sources
+  exit 0
+fi
+
+mkdir_groot
+download_sources
+

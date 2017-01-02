@@ -1,0 +1,9 @@
+# Software for Gopher
+
+- git: { local-name: 'gopher',             version: 'release/0.5-indigo', uri: 'https://bitbucket.org/yujinrobot/gopher.git'}
+- git: { local-name: 'gopher_calibration', version: 'release/0.2-indigo', uri: 'https://bitbucket.org/yujinrobot/gopher_calibration.git'}
+- git: { local-name: 'somanet_driver',     version: 'release/0.1-indigo', uri: 'https://bitbucket.org/yujinrobot/somanet_driver.git'}
+
+# 3rd party
+- git: { local-name: 'rplidar_ros',        version: 'release/1.0-indigo-yujin-modified', uri: 'https://github.com/yujinrobot/rplidar_ros.git'}
+

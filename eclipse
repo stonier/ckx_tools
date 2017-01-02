@@ -1,4 +1,4 @@
 #!/bin/bash
 
-eclipse -data ~/workspace/eclipse/neon/ckx_tools
+eclipse -data ~/workspace/eclipse/neon/yujin_tools
 

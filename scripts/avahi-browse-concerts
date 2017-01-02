@@ -1,0 +1,3 @@
+#!/bin/bash
+
+avahi-browse -t -r _concert-master._tcp
