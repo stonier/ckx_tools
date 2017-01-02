@@ -1,0 +1,4 @@
+#!/bin/bash
+
+eclipse -data ~/workspace/eclipse/neon/ckx_tools
+
