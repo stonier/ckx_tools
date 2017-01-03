@@ -17,6 +17,14 @@ import subprocess
 import ast
 
 ##############################################################################
+# Constants
+##############################################################################
+
+DEFAULT_TRACK = "kinetic"
+VALID_TRACKS = ["groovy", "hydro", "indigo", "jade", "kinetic"]
+DEFAULT_ROSINSTALL_DATABASE = 'https://raw.github.com/stonier/ckx_tools/devel/rosinstalls'
+
+##############################################################################
 # Methods
 ##############################################################################
 
@@ -41,6 +49,55 @@ def ckx_tools_home():
     """
     home_dir = os.path.join(os.path.expanduser('~'), '.ckx_tools')
     return home_dir
+
+
+def set_default_track(track=DEFAULT_TRACK):
+    if track not in VALID_TRACKS:
+        raise RuntimeError("The track '%s' is not a valid track. Choose from %s\n" % (track, common.VALID_TRACKS))
+    filename = os.path.join(ckx_tools_home(), "track")
+    f = open(filename, 'w+')
+    try:
+        f.write(track.encode('utf-8'))
+    finally:
+        f.close()
+    return track
+
+
+def set_rosinstall_database_uri(rosinstall_database=DEFAULT_ROSINSTALL_DATABASE):
+    '''
+      Set a uri for your rosinstall database.
+    '''
+    # could actually check that it is a valid uri though.
+    filename = os.path.join(ckx_tools_home(), "rosinstall_database")
+    f = open(filename, 'w+')
+    try:
+        f.write(rosinstall_database.encode('utf-8'))
+    finally:
+        f.close()
+    return rosinstall_database
+
+
+def get_default_track():
+    filename = os.path.join(ckx_tools_home(), "track")
+    try:
+        f = open(filename, 'r')
+    except IOError:
+        set_default_track()
+        return DEFAULT_TRACK
+    track = f.read()
+    f.close()
+    return track
+
+
+def get_rosinstall_database_uri():
+    filename = os.path.join(ckx_tools_home(), "rosinstall_database")
+    try:
+        f = open(filename, 'r')
+    except IOError:
+        return set_rosinstall_database_uri()
+    rosinstall_database = f.read()
+    f.close()
+    return rosinstall_database
 
 
 def which(program):

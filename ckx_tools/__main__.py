@@ -120,6 +120,10 @@ def ckx_main(sysargs):
     argument_preprocessors = create_subparsers(parser, verbs)
 
     args = parser.parse_args(sysargs)
+#     # Help out by collecting unknown args in the unknown_args variable (build uses an arbitrary
+#     # collection of unknown args for the make arguments)
+#     args, unknown_args = parser.parse_known_args(sysargs)
+#     args.unknown_args = unknown_args
 
     ####################
     # Version

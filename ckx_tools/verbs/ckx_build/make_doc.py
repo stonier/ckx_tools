@@ -9,9 +9,10 @@ import subprocess
 # Local imports
 ##############################################################################
 
-import common
-import console
-from make_doc_html_templates import html_header, html_footer
+import ckx_tools.common as common
+import ckx_tools.console as console
+
+from . import make_doc_html_templates
 
 ##############################################################################
 # Methods
@@ -38,13 +39,13 @@ def generates_index_page(doc_path, pkg_names):
     index_page = doc_path + '/index.html'
     fd = os.open(index_page, os.O_RDWR | os.O_CREAT)
 
-    output(fd, html_header)
+    output(fd, make_doc_html_templates.html_header)
 
     for pkg in pkg_names:
         link_html = '  <p><a href="' + pkg + '/html/index.html">' + pkg + '</a></p>'
         output(fd, [link_html])
 
-    output(fd, html_footer)
+    output(fd, make_doc_html_templates.html_footer)
     os.close(fd)
 
 
