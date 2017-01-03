@@ -17,7 +17,7 @@ Module implementing the 'ckx config' verb.
 
 from ckx_tools.argument_parsing import argument_preprocessor
 
-from ckx_tools.verbs.ckx_config import main
+from . import main
 
 ##############################################################################
 # Plugin Description

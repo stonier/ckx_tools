@@ -39,16 +39,12 @@ from . import make_doc
 
 def help_string():
     overview = 'Builds a catkin workspace.\n\n'
-    instructions = " \
- - 'ckx ws ecl' : create an empty workspace in ./ecl.\n \
- - 'ckx ws ~/ecl' : create an empty workspace in ~/ecl.\n \
- - 'ckx ws ecl ecl.rosinstall' : populate a workspace from rosinstall file.\n \
- - 'ckx ws ecl ecl' : populate a workspace from our rosinstall database from the deafult track.\n \
- - 'ckx settings --get-default-track' : shows the currently set default track.\n \
- - 'ckx settings --set-default-track=kinetic' : sets the currently set default track.\n \
- - 'ckx ws --track=kinetic ecl ecl' : populate a workspace from our rosinstall database for kinetic.\n \
- - 'ckx ws ecl https://raw.github.com/stonier/ecl_core/devel/ecl.rosinstall' : populate from uri.\n \
- - 'ckx ws --merge ./ecl_extras.rosinstall' : merge sources from another rosinstall.\n \
+    instructions = "A typical workflow:\n \
+ - 'ckx build --pre-clean : build and install the current workspace\n \
+ - 'ckx build --install-rosdeps : install rosdeps\n \
+ - 'ckx build' : build the current workspace\n \
+ - 'ckx build --install : build and install the current workspace\n \
+ - 'ckx build --tests/--run-tests : build and (optionally) run tests\n \
  "
     return overview + instructions
 

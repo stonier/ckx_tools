@@ -14,10 +14,6 @@ setup(name='ckx_tools',
       version=__version__,
       packages=['ckx_tools', 'catkin_make'],
       package_dir={'ckx_tools': 'ckx_tools', 'catkin_make': 'catkin_make'},
-      scripts=[
-          'scripts/ckx_make',
-          'scripts/ckx_make_isolated',
-      ],
       package_data={'ckx_tools': [
           'cmake/*',
           'templates/init_build/.bashrc',
@@ -56,6 +52,7 @@ setup(name='ckx_tools',
               'config = ckx_tools.verbs.ckx_config:description',
               'build = ckx_tools.verbs.ckx_build:description',
               'settings = ckx_tools.verbs.ckx_settings:description',
+              'isolated = ckx_tools.verbs.ckx_isolated:description',
           ],
       }
       # not picked up by distutils, need to install setuptools above
