@@ -1,2 +1,0 @@
-#!/bin/bash
-konsole -e /bin/bash --init-file %(cwd)s/.bashrc

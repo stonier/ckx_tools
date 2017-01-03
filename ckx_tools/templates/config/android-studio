@@ -1,9 +1,9 @@
 #!/bin/bash
 
-export CKX_WORKSPACE=%(cwd)s
-if [ -d ${CKX_WORKSPACE}/devel ]; then
-  source ${CKX_WORKSPACE}/devel/setup.bash
-fi
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+source ${DIR}/custom.bash
+
 # Add the full path if android-studio is not in PATH
 # Usually something like:
 #   exec /opt/android-studio/bin/studio.sh

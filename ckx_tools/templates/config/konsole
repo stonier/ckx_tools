@@ -1,0 +1,5 @@
+#!/bin/bash
+
+PWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+konsole -e /bin/bash --init-file ${PWD}/custom.bash

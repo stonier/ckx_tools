@@ -75,12 +75,12 @@ def fill_in_template(template, name, cwd):
     return template % locals()
 
 
-def instantiate_template(filename, name, cwd):
-    template_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'templates', 'init_build')
+def instantiate_template(filename, name, build_dir, workspace_dir):
+    template_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'templates', 'config')
     tmpl = read_template(os.path.join(template_dir, filename))
-    contents = fill_in_template(tmpl, name, cwd)
+    contents = fill_in_template(tmpl, name, workspace_dir)
     try:
-        f = open(os.path.join(cwd, filename), 'w')
+        f = open(os.path.join(build_dir, filename), 'w')
         f.write(contents.encode('utf-8'))
     finally:
         os.fchmod(f.fileno(), stat.S_IRWXU | stat.S_IRWXG)
@@ -211,7 +211,7 @@ def list_platforms():
 def init_configured_build(default_underlay, build_dir_="./", source_dir_="./src", underlays_="/opt/ros/groovy", install_prefix_="./install", doc_prefix_="./doc", release_=False, toolchain_="", platform_=""):
     '''
       This one is used with pre-configured parameters. Note that
-      init_build generates parameters parsed from the command line and then
+      config generates parameters parsed from the command line and then
       calls this function.
     '''
     # Help us build the name for the eclipse workspace...usually we call in the workspace itself.
@@ -232,6 +232,9 @@ def init_configured_build(default_underlay, build_dir_="./", source_dir_="./src"
             os.mkdir(build_dir)
     else:
         raise RuntimeError("This build directory is already initialised")
+
+    print("DJS: Build Directory: %s" % build_dir)
+    print("DJS: WS Directory: %s" % workspace_dir)
 
     ##########################
     # Source directory
@@ -380,11 +383,11 @@ def init_configured_build(default_underlay, build_dir_="./", source_dir_="./src"
     ##########################
     # Templates
     ##########################
-    instantiate_template('.bashrc', name, build_dir)
-    instantiate_template('konsole', name, build_dir)
-    instantiate_template('gnome-terminal', name, build_dir)
-    instantiate_template('eclipse', name, build_dir)
-    instantiate_template('android-studio', name, build_dir)
+    instantiate_template('custom.bash', name, build_dir, workspace_dir)
+    instantiate_template('konsole', name, build_dir, workspace_dir)
+    instantiate_template('gnome-terminal', name, build_dir, workspace_dir)
+    instantiate_template('eclipse', name, build_dir, workspace_dir)
+    instantiate_template('android-studio', name, build_dir, workspace_dir)
 
 
 def clean(dir_to_be_cleaned, dir_sources):

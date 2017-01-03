@@ -18,6 +18,7 @@ Implementation of the 'ckx build' verb.
 import catkin_make.builder as builder  # extract_cmake_and_make_arguments, cmake_input_changed
 import catkin_pkg.packages as catkin_packages
 import ckx_tools.common as common
+import ckx_tools.common as config_cache
 import ckx_tools.console as console
 import ckx_tools.terminal_color as terminal_color
 import multiprocessing
@@ -29,7 +30,6 @@ import sys
 
 from ckx_tools.terminal_color import fmt
 
-from . import config_cache
 from . import make_doc
 
 ##############################################################################
@@ -141,6 +141,7 @@ def insert_ckx_build_signature(ckx_build_root, devel_path):
             break
     if not found:
         setup_sh.write("export CKX_BUILD_ROOT=%s\n" % ckx_build_root)
+    setup_sh.close()
 
 
 def install_rosdeps(base_path, source_path, rosdistro, no_color):

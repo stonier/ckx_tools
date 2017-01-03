@@ -1,9 +1,0 @@
-#!/bin/bash
-
-export CKX_WORKSPACE=%(cwd)s
-if [ -d ${CKX_WORKSPACE}/devel ]; then
-  source ${CKX_WORKSPACE}/devel/setup.bash
-  alias cddevel="cd ${CKX_WORKSPACE}/build/devel"
-fi
-# Add the full path if eclipse is not in PATH
-exec eclipse -data ~/workspace/eclipse/ckx/%(name)s
