@@ -17,7 +17,7 @@ Module implementing global settings for the 'ckx' tool.
 
 from ckx_tools.argument_parsing import argument_preprocessor
 
-from . import cli
+from ckx_tools.verbs.ckx_settings import main
 
 ##############################################################################
 # Plugin Description
@@ -26,7 +26,7 @@ from . import cli
 description = dict(
     verb='settings',
     description="set and get global settings for the 'ckx' ",
-    main=cli.main,
-    prepare_arguments=cli.prepare_arguments,
+    main=main.main,
+    prepare_arguments=main.prepare_arguments,
     argument_preprocessor=argument_preprocessor,
 )

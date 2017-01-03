@@ -20,7 +20,6 @@ import sys
 import pkg_resources  # setuptools related helper that introspects the package
 
 from . import common
-from . import settings
 from . import terminal_color
 
 from .terminal_color import fmt
@@ -82,9 +81,9 @@ def create_subparsers(parser, verbs):
 
 def ckx_main(sysargs):
     try:
-        settings.initialise_ckx_tools_home()
+        common.initialise_ckx_tools_home()
     except RuntimeError as e:
-        sys.exit("Failed to initialise the settings dir [{0}][{1}]".format(settings.ckx_tools_home(), str(e)))
+        sys.exit("Failed to initialise the settings dir [{0}][{1}]".format(common.ckx_tools_home(), str(e)))
 
     # the top parser dog
     parser = argparse.ArgumentParser(

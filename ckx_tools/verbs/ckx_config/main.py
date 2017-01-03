@@ -17,7 +17,6 @@ Implementation of the 'ckx config' verb.
 
 import ckx_tools.common as common
 import ckx_tools.console as console
-import ckx_tools.settings as settings
 import os
 import shutil
 import stat  # file permissions
@@ -52,8 +51,8 @@ def prepare_arguments(parser):
     #  even though we don't set a default value here, it later gets set as the default underlay if not present and --no-default-underlay is not true
     parser.add_argument('-u', '--underlays', action='store', default='', help='semi-colon list of catkin workspaces to utilise, priority given from front to back')
     default_underlay_group = parser.add_mutually_exclusive_group()
-    default_underlay_group.add_argument('-du', '--default-underlay', choices=settings.VALID_TRACKS, action='store', default=None, help='default the underlays to this track if catkin is not found [`ckx_tools_settings --get-default-track`]')
-    default_underlay_group.add_argument('--track', choices=settings.VALID_TRACKS, dest='default_underlay', action='store', default=None, help='convenience equivalent for the --default-underlay option')
+    default_underlay_group.add_argument('-du', '--default-underlay', choices=common.VALID_TRACKS, action='store', default=None, help='default the underlays to this track if catkin is not found [`ckx_tools_settings --get-default-track`]')
+    default_underlay_group.add_argument('--track', choices=common.VALID_TRACKS, dest='default_underlay', action='store', default=None, help='convenience equivalent for the --default-underlay option')
     default_underlay_group.add_argument('-n', '--no-default-underlay', action='store_true', help='do not automatically underlay with the default track setting [false]')
     parser.add_argument('-t', '--toolchain', action='store', default='', help='toolchain cmake module to load []')
     parser.add_argument('-p', '--platform', action='store', default='default', help='platform cmake cache module to load [default]')
@@ -178,7 +177,7 @@ def list_toolchains():
             console.pretty_print(" -- %s/" % family, console.cyan)
             console.pretty_println("%s" % platform, console.yellow)
     console.pretty_println("Custom:", console.bold)
-    toolchains = get_toolchains_or_platforms(os.path.join(settings.ckx_tools_home(), 'toolchains'))
+    toolchains = get_toolchains_or_platforms(os.path.join(common.ckx_tools_home(), 'toolchains'))
     if toolchains:
         for family in toolchains:
             for platform in toolchains[family]:
@@ -198,7 +197,7 @@ def list_platforms():
             console.pretty_print(" -- %s/" % family, console.cyan)
             console.pretty_println("%s" % platform, console.yellow)
     console.pretty_println("Custom:", console.bold)
-    platforms = get_toolchains_or_platforms(os.path.join(settings.ckx_tools_home(), 'platforms'))
+    platforms = get_toolchains_or_platforms(os.path.join(common.ckx_tools_home(), 'platforms'))
     if platforms:
         for family in platforms:
             for platform in platforms[family]:
@@ -318,7 +317,7 @@ def init_configured_build(default_underlay, build_dir_="./", source_dir_="./src"
     ##########################
     if not toolchain_ == "":
         toolchains_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'toolchains')
-        custom_toolchains_dir = os.path.join(settings.ckx_tools_home(), 'toolchains')
+        custom_toolchains_dir = os.path.join(common.ckx_tools_home(), 'toolchains')
         tmp_list = toolchain_.split('/')
         if len(tmp_list) != 2:
             raise RuntimeError("Toolchain specification invalid, must be <family>/<tuple> [%s]" % toolchain_)
@@ -344,7 +343,7 @@ def init_configured_build(default_underlay, build_dir_="./", source_dir_="./src"
     ##########################
     platform_content = ""
     platforms_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'platforms')
-    custom_platforms_dir = os.path.join(settings.ckx_tools_home(), 'platforms')
+    custom_platforms_dir = os.path.join(common.ckx_tools_home(), 'platforms')
     if not platform_ == "default":
         tmp_list = platform_.split('/')
         if len(tmp_list) != 2:
@@ -423,7 +422,7 @@ def main(args):
     if args.no_default_underlay:
         args.default_underlay = None
     elif not args.default_underlay:
-        args.default_underlay = settings.get_default_track()
+        args.default_underlay = common.get_default_track()
 
     ##########################
     # Toolchains and Platform

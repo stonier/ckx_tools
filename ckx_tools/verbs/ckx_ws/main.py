@@ -16,8 +16,8 @@ Implementation of the 'ckx ws' verb.
 ##############################################################################
 
 import argparse
+import ckx_tools.common as common
 import ckx_tools.console as console
-import ckx_tools.settings as settings
 import os
 import sys
 import urllib2
@@ -60,7 +60,7 @@ def prepare_arguments(parser):
     parser.add_argument('-s', '--simple', action='store_true', help='just create a basic single build workspace (usual ros style) [false]')
     parser.add_argument('--list-rosinstalls', action='store_true', help='list all currently available rosinstalls [false]')
     parser.add_argument('-m', '--merge', action='store', default=None, help='merge a keyed (--list-rosinstall) rosinstall into the current workspace')
-    parser.add_argument('--track', action='store', default=None, help='retrieve rosinstalls relevant to this track %s[%s]' % (settings.VALID_TRACKS, settings.DEFAULT_TRACK))
+    parser.add_argument('--track', action='store', default=None, help='retrieve rosinstalls relevant to this track %s[%s]' % (common.VALID_TRACKS, common.DEFAULT_TRACK))
     parser.add_argument('-j', '--jobs', action='store', default=1, help='how many parallel threads to use for installing[1]')
     parser.add_argument('uri', nargs=argparse.REMAINDER, default=None, help='uri for a rosinstall file [None]')
     return parser
@@ -97,7 +97,7 @@ def populate_workspace(base_path, uri_list, parallel_jobs, do_init=True):
 
 
 def list_rosinstalls(track):
-    rosinstall_database_uri = '%s/%s.yaml' % (settings.get_rosinstall_database_uri(), track)
+    rosinstall_database_uri = '%s/%s.yaml' % (common.get_rosinstall_database_uri(), track)
     try:
         response = urllib2.urlopen(rosinstall_database_uri)
     except urllib2.URLError as unused_e:
@@ -112,7 +112,7 @@ def list_rosinstalls(track):
 
 def get_rosinstall_database(track):
     lookup_track = track
-    lookup_database = settings.get_rosinstall_database_uri()
+    lookup_database = common.get_rosinstall_database_uri()
     rosinstall_database_uri = '%s/%s.yaml' % (lookup_database, lookup_track)
     try:
         unused_response = urllib2.urlopen(rosinstall_database_uri)
@@ -224,7 +224,7 @@ def main(args):
       Process the workspace command and return success or failure to the calling script.
     '''
     if not args.track:
-        args.track = settings.get_default_track()
+        args.track = common.get_default_track()
     if args.list_rosinstalls:
         list_rosinstalls(args.track)
         return 0

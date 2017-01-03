@@ -23,7 +23,6 @@ from catkin_pkg.packages import find_packages
 import console
 import config_cache
 import common
-import settings
 from make_doc import make_doc
 
 import catkin_make.terminal_color as terminal_color

@@ -5,3 +5,4 @@ dist
 install.record
 MANIFEST
 *.py[cod]
+tmp

@@ -75,14 +75,8 @@ def prepare_arguments(parser):
     docgroup.add_argument('-d', '--doc', action='store_true', help='Generates the documents for packages in the workspace.')
     docgroup.add_argument('--doc-only', action='store_true', help='Generates the documents for packages in the workspace. Does not build source')
 
-    parser.add_argument(
-        '--cmake-args', dest='cmake_args', nargs='*', type=str,
-        help='Arbitrary arguments which are passes to CMake. It must be passed after other arguments since it collects all following options.'
-    )
-    parser.add_argument(
-        '--make-args', dest='make_args', nargs='*', type=str,
-        help='Arbitrary arguments which are passes to make. It must be passed after other arguments since it collects all following options. This is only necessary in combination with --cmake-args since else all unknown arguments are passed to make anyway.'
-    )
+    parser.add_argument('--cmake-args', dest='cmake_args', nargs='*', type=str, help='Arguments to be passed to CMake.')
+    parser.add_argument('--make-args', dest='make_args', nargs='*', type=str, help='Arguments to be passed to make.')
     return parser
 
 
@@ -187,8 +181,8 @@ def main(args):
     ####################
     if not args.jobs:
         args.jobs = common.good_number_of_jobs()
-    # TODO args.cmake_args = [] if args.cmake_args is None else args.cmake_args
-    # TODO args.make_args = [] if args.make_args is None else args.make_args
+    args.cmake_args = [] if args.cmake_args is None else args.cmake_args
+    args.make_args = [] if args.make_args is None else args.make_args
 
     if args.no_color:
         terminal_color.disable_ANSI_colors()
@@ -273,6 +267,8 @@ def main(args):
             cmd.append(toolchain_cmd)
         if config_cmd:
             cmd.append(config_cmd)
+        print("Command: %s" % cmd)
+        print("Args: %s" % args.cmake_args)
         cmd += args.cmake_args
 
         # new_env = common.generate_underlays_environment(base_path)
