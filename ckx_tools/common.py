@@ -49,7 +49,7 @@ def ckx_tools_home():
 
 def set_default_track(track=DEFAULT_TRACK):
     if track not in VALID_TRACKS:
-        raise RuntimeError("The track '%s' is not a valid track. Choose from %s\n" % (track, common.VALID_TRACKS))
+        raise RuntimeError("The track '%s' is not a valid track. Choose from %s\n" % (track, VALID_TRACKS))
     filename = os.path.join(ckx_tools_home(), "track")
     f = open(filename, 'w+')
     try:

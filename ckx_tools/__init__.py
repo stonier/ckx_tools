@@ -15,6 +15,3 @@ functionality for the ckx scripts.
 ##############################################################################
 # Imports
 ##############################################################################
-
-from .make import make_main
-from .make_isolated import make_isolated_main
