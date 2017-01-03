@@ -5,6 +5,37 @@
 #
 
 ##############################################################################
+# Description
+##############################################################################
+
+"""
+.. module:: console
+   :platform: Unix
+   :synopsis: Tools for colourising the console.
+
+Colour definitions and logging functions for colourising the console.
+
+----
+
+**Colour Definitions**
+
+The current list of colour definitions include:
+
+ * ``Regular``: black, red, green, yellow, blue, magenta, cyan, white,
+ * ``Bold``: bold, bold_black, bold_red, bold_green, bold_yellow, bold_blue, bold_magenta, bold_cyan, bold_white
+
+These colour definitions can be used in the following way:
+
+.. code-block:: python
+
+   import ckx_tools.console as console
+   print(console.cyan + "    Name" + console.reset + ": " + console.yellow + "Dude" + console.reset)
+
+----
+
+"""
+
+##############################################################################
 # Imports
 ##############################################################################
 
@@ -16,6 +47,11 @@ import sys
 
 
 def console_has_colours(stream):
+    """
+    Detects if the specified stream has colourising capability.
+
+    :param stream: stream to check (typically sys.stdout)
+    """
     if not hasattr(stream, "isatty"):
         return False
     if not stream.isatty():
@@ -29,12 +65,18 @@ def console_has_colours(stream):
         return False
 
 has_colours = console_has_colours(sys.stdout)
-#reset = "\x1b[0;0m"
-reset = "\x1b[0m"
+if has_colours:
+    #reset = "\x1b[0;0m"
+    reset = "\x1b[0m"
+    bold = "\x1b[%sm" % '1'
+    black, red, green, yellow, blue, magenta, cyan, white = ["\x1b[%sm" % str(i) for i in range(30, 38)]
+    bold_black, bold_red, bold_green, bold_yellow, bold_blue, bold_magenta, bold_cyan, bold_white = ["\x1b[%sm" % ('1;' + str(i)) for i in range(30, 38)]
+else:
+    reset = ""
+    bold = ""
+    black, red, green, yellow, blue, magenta, cyan, white = ["" for i in range(30, 38)]
+    bold_black, bold_red, bold_green, bold_yellow, bold_blue, bold_magenta, bold_cyan, bold_white = ["" for i in range(30, 38)]
 
-bold = '1'
-black, red, green, yellow, blue, magenta, cyan, white = [str(i) for i in range(30, 38)]
-bold_black, bold_red, bold_green, bold_yellow, bold_blue, bold_magenta, bold_cyan, bold_white = ['1;' + str(i) for i in range(30, 38)]
 colours = [
            bold,
            black, red, green, yellow, blue, magenta, cyan, white,
@@ -44,7 +86,7 @@ colours = [
 
 def pretty_print(msg, colour=white):
     if has_colours:
-        seq = "\x1b[%sm" % (colour) + msg + reset
+        seq = colour + msg + reset
         sys.stdout.write(seq)
     else:
         sys.stdout.write(msg)
@@ -52,7 +94,7 @@ def pretty_print(msg, colour=white):
 
 def pretty_println(msg, colour=white):
     if has_colours:
-        seq = "\x1b[%sm" % (colour) + msg + reset
+        seq = colour + msg + reset
         sys.stdout.write(seq)
         sys.stdout.write("\n")
     else:
@@ -65,32 +107,64 @@ def pretty_println(msg, colour=white):
 
 
 def debug(msg):
-    pretty_print("%s\n" % msg, green)
+    print(green + msg + reset)
 
 
 def warning(msg):
-    pretty_print("%s\n" % msg, yellow)
+    print(yellow + msg + reset)
+
+
+def info(msg):
+    print(msg)
 
 
 def error(msg):
-    pretty_print("%s\n" % msg, red)
+    print(red + msg + reset)
 
 
 def logdebug(message):
-    pretty_print("[debug] " + message + "\n", green)
+    '''
+    Prefixes '[debug]' and colours the message green.
+
+    :param message str: message to log.
+    '''
+    print(green + "[debug] " + message + reset)
+
+
+def loginfo(message):
+    '''
+    Prefixes '[info]' to the message.
+
+    :param message str: message to log.
+    '''
+    print("[info ] " + message)
 
 
 def logwarn(message):
-    pretty_print("[warning] " + message + "\n", yellow)
+    '''
+    Prefixes '[warn ]' and colours the message yellow.
+
+    :param message str: message to log.
+    '''
+    print(yellow + "[warn ] " + message + reset)
 
 
 def logerror(message):
-    pretty_print("[error] " + message + "\n", red)
+    '''
+    Prefixes '[error]' and colours the message red.
+
+    :param message str: message to log.
+    '''
+    print(red + "[error] " + message + reset)
 
 
 def logfatal(message):
-    pretty_print("[error] " + message + "\n", bold_red)
+    '''
+    Prefixes '[fatal]' and colours the message bold red.
 
+    :param message str: message to log.
+    '''
+    print(bold_red + "[error] " + message + reset)
 
 ##############################################################################
 # Main
@@ -99,9 +173,10 @@ def logfatal(message):
 if __name__ == '__main__':
     for colour in colours:
         pretty_print("dude\n", colour)
-    logdebug("info message")
-    logwarn("warning message")
-    logerror("error message")
-    logfatal("fatal message")
+    logdebug("loginfo message")
+    logwarn("logwarn message")
+    logerror("logerror message")
+    logfatal("logfatal message")
     pretty_print("red\n", red)
     print("some normal text")
+    print(cyan + "    Name" + reset + ": " + yellow + "Dude" + reset)
