@@ -31,7 +31,7 @@ build:
 
 build_dependencies:
 	echo "Downloading dependencies"
-	sudo apt-get install python-stdeb
+	sudo apt-get install python-stdeb virtualenvwrapper
 
 clean_dist:
 	-rm -f MANIFEST
