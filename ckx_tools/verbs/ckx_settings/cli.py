@@ -1,21 +1,24 @@
+#!/usr/bin/env python
+#
+# License: BSD
+#   https://raw.github.com/stonier/ckx_tools/devel/LICENSE
+#
+##############################################################################
+# Documentation
+##############################################################################
+
+"""
+Implementation of the 'ckx settings' verb.
+"""
+
 ##############################################################################
 # Imports
 ##############################################################################
 
+import ckx_tools.common as common
+import ckx_tools.console as console
 import os.path
-
 import sys
-#import stat  # file permissions
-import argparse
-from argparse import RawTextHelpFormatter
-#import shutil
-
-##############################################################################
-# Local imports
-##############################################################################
-
-import console
-#import common
 
 ##############################################################################
 # Constants
@@ -30,23 +33,27 @@ DEFAULT_ROSINSTALL_DATABASE = 'https://raw.github.com/stonier/ckx_tools/devel/ro
 ##############################################################################
 
 
-def ckx_tools_home():
-    """
-    Get directory location of '.ckx_tools' directory (aka Yujin Tools home).
+def help_string():
+    overview = '\nThis is a convenience script for configuring ckx tools settings.\n\n'
+    instructions = " \
+ - 'ckx settings --get-default-track' : return the currently configured default track.\n \
+ - 'ckx settings --set-default-track hydro' : save this track as the default track in ckx_tools_home.\n \
+ - 'ckx settings --get-rosinstall-database-uri' : return the currently configured rosinstall database uri.\n \
+ - 'ckx settings --set-rosinstall-database-uri' : save this url as the default rosinstall database uri.\n \
+ "
+    return overview + instructions
 
-    @param env: override os.environ dictionary
-    @type  env: dict
-    @return: path to use use for log file directory
-    @rtype: str
-    """
-    home_dir = os.path.join(os.path.expanduser('~'), '.ckx_tools')
-    if not os.path.exists(home_dir):
-        os.makedirs(home_dir)
-    return home_dir
+
+def prepare_arguments(parser):
+    parser.add_argument('--get-default-track', action='store_true', help='print the default track that is being followed to screen')
+    parser.add_argument('--set-default-track', action='store', default=None, help='set a new default track to work from %s' % VALID_TRACKS)
+    parser.add_argument('--get-rosinstall-database-uri', action='store_true', help='print the default rosinstall database uri')
+    parser.add_argument('--set-rosinstall-database-uri', action='store', default=None, help='set a new default  rosinstall database uri')
+    return parser
 
 
 def get_default_track():
-    filename = os.path.join(ckx_tools_home(), "track")
+    filename = os.path.join(common.ckx_tools_home(), "track")
     try:
         f = open(filename, 'r')
     except IOError:
@@ -60,7 +67,7 @@ def get_default_track():
 def set_default_track(track=DEFAULT_TRACK):
     if track not in VALID_TRACKS:
         raise RuntimeError("The track '%s' is not a valid track. Choose from %s\n" % (track, VALID_TRACKS))
-    filename = os.path.join(ckx_tools_home(), "track")
+    filename = os.path.join(common.ckx_tools_home(), "track")
     f = open(filename, 'w+')
     try:
         f.write(track.encode('utf-8'))
@@ -70,7 +77,7 @@ def set_default_track(track=DEFAULT_TRACK):
 
 
 def get_rosinstall_database_uri():
-    filename = os.path.join(ckx_tools_home(), "rosinstall_database")
+    filename = os.path.join(common.ckx_tools_home(), "rosinstall_database")
     try:
         f = open(filename, 'r')
     except IOError:
@@ -85,7 +92,7 @@ def set_rosinstall_database_uri(rosinstall_database=DEFAULT_ROSINSTALL_DATABASE)
       Set a uri for your rosinstall database.
     '''
     # could actually check that it is a valid uri though.
-    filename = os.path.join(ckx_tools_home(), "rosinstall_database")
+    filename = os.path.join(common.ckx_tools_home(), "rosinstall_database")
     f = open(filename, 'w+')
     try:
         f.write(rosinstall_database.encode('utf-8'))
@@ -93,37 +100,14 @@ def set_rosinstall_database_uri(rosinstall_database=DEFAULT_ROSINSTALL_DATABASE)
         f.close()
     return rosinstall_database
 
-##############################################################################
-# Utility Settings Script Functionality
-##############################################################################
 
-
-def help_string():
-    overview = '\nThis is a convenience script for configuring ckx tools settings.\n\n'
-    instructions = " \
- - 'ckx_tools_settings --get-default-track' : return the currently configured default track.\n \
- - 'ckx_tools_settings --set-default-track hydro' : save this track as the default track in ckx_tools_home.\n \
- - 'ckx_tools_settings --get-rosinstall-database-uri' : return the currently configured rosinstall database uri.\n \
- - 'ckx_tools_settings --set-rosinstall-database-uri' : save this url as the default rosinstall database uri.\n \
- "
-    return overview + instructions
-
-
-def parse_arguments():
-    parser = argparse.ArgumentParser(description=help_string(), formatter_class=RawTextHelpFormatter)
-    parser.add_argument('--get-default-track', action='store_true', help='print the default track that is being followed to screen')
-    parser.add_argument('--set-default-track', action='store', default=None, help='set a new default track to work from %s' % VALID_TRACKS)
-    parser.add_argument('--get-rosinstall-database-uri', action='store_true', help='print the default rosinstall database uri')
-    parser.add_argument('--set-rosinstall-database-uri', action='store', default=None, help='set a new default  rosinstall database uri')
-    args = parser.parse_args()
-    return args
-
-
-def main():
-    args = parse_arguments()
+def main(args):
+    '''
+      Process the workspace command and return success or failure to the calling script.
+    '''
     if args.get_default_track:
-        #console.pretty_print("\nDefault Track: ", console.cyan)
-        #console.pretty_println("%s\n" % get_default_track(), console.yellow)
+        # console.pretty_print("\nDefault Track: ", console.cyan)
+        # console.pretty_println("%s\n" % get_default_track(), console.yellow)
         print get_default_track()
         sys.exit(0)
     if args.set_default_track:
@@ -138,3 +122,4 @@ def main():
         console.pretty_println("%s\n" % set_rosinstall_database_uri(args.set_rosinstall_database_uri), console.yellow)
         sys.exit(0)
     print("%s" % help_string())
+    return 0

@@ -15,12 +15,19 @@ Implementation of the 'ckx build' verb.
 # Imports
 ##############################################################################
 
+
+##############################################################################
+# Methods
+##############################################################################
+
 def prepare_arguments(parser):
     parser.description = """\
 Build one or more packages in a catkin workspace.
 This invokes `CMake`, `make`, and optionally `make install` for either all
 or the specified packages in a catkin workspace.\
 """
+    return parser
 
-def main(opts):
-    pass
+
+def main(args):
+    print("build main")

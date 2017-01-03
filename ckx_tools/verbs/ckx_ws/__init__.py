@@ -17,14 +17,16 @@ Module implementing the 'ckx ws' verb.
 
 from ckx_tools.argument_parsing import argument_preprocessor
 
-from .cli import main
-from .cli import prepare_arguments
+from . import cli
 
-# This describes this command to the loader
+##############################################################################
+# Plugin Description
+##############################################################################
+
 description = dict(
-    verb='build',
-    description="Builds a catkin workspace.",
-    main=main,
-    prepare_arguments=prepare_arguments,
+    verb='ws',
+    description="creates and populates a catkin workspace",
+    main=cli.main,
+    prepare_arguments=cli.prepare_arguments,
     argument_preprocessor=argument_preprocessor,
 )

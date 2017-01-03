@@ -8,30 +8,25 @@
 ##############################################################################
 
 """
-Commands verbs to be applied to the ckx entry point.
+Module implementing global settings for the 'ckx' tool.
 """
 
 ##############################################################################
 # Imports
 ##############################################################################
 
-# import sys
-import pkg_resources  # setuptools related helper that introspects the package
+from ckx_tools.argument_parsing import argument_preprocessor
+
+from . import cli
 
 ##############################################################################
-# Methods
+# Plugin Description
 ##############################################################################
 
-CKX_COMMAND_VERB_GROUP = 'ckx_tools.commands.ckx.verbs'
-
-def list_verbs():
-    verbs = []
-    for entry_point in pkg_resources.iter_entry_points(group=CKX_COMMAND_VERB_GROUP):
-        verbs.append(entry_point.name)
-    return verbs
-
-def load_verb_description(verb_name):
-    for entry_point in pkg_resources.iter_entry_points(group=CKX_COMMAND_VERB_GROUP):
-        if entry_point.name == verb_name:
-            return entry_point.load()
-
+description = dict(
+    verb='settings',
+    description="set and get global settings for the 'ckx' ",
+    main=cli.main,
+    prepare_arguments=cli.prepare_arguments,
+    argument_preprocessor=argument_preprocessor,
+)

@@ -2,7 +2,7 @@
 # Imports
 ##############################################################################
 
-import os
+import os.path
 import sys
 import multiprocessing
 
@@ -19,6 +19,28 @@ import ast
 ##############################################################################
 # Methods
 ##############################################################################
+
+
+def initialise_ckx_tools_home():
+    """
+    Check that the ckx tools home exists otherwise try to create it.
+    """
+    home_dir = ckx_tools_home()
+    if not os.path.exists(home_dir):
+        if os.path.isfile(home_dir):
+            raise RuntimeError("the ckx tools home ({0}) exists but is a file.".format(home_dir))
+        os.makedirs(home_dir)
+
+
+def ckx_tools_home():
+    """
+    Get directory location of '.ckx_tools' directory.
+
+    @return: path to use use for the settings directory
+    @rtype: str
+    """
+    home_dir = os.path.join(os.path.expanduser('~'), '.ckx_tools')
+    return home_dir
 
 
 def which(program):
@@ -46,18 +68,10 @@ def is_same_dir(dir_a, dir_b):
         return False
 
 
-#def modified_environment(catkin_python_path, env=None):
-#    '''
-#      Prepends the path to the PYTHONPATH environment variable.
-#      Could use some checking to make sure it is a single path, not a
-#      pathsep list.
-#    '''
-#    if not env:
-#        env = os.environ.copy()
-#    try:
-#        env['PYTHONPATH'] = env['PYTHONPATH'] + os.pathsep + catkin_python_path
-#    except KeyError:
-#        env['PYTHONPATH'] = catkin_python_path
+def is_tty(stream):
+    """Returns True if the given stream is a tty, else False"""
+    return hasattr(stream, 'isatty') and stream.isatty()
+
 
 def good_number_of_jobs():
     if 'ROS_PARALLEL_JOBS' in os.environ:

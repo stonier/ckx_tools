@@ -15,6 +15,7 @@ Module implementing argument parsing for the entire suite.
 # Imports
 ##############################################################################
 
+
 def argument_preprocessor(args):
     """Perform processing of argument patterns which are not captured by
     argparse, before being passed to argparse
@@ -25,4 +26,4 @@ def argument_preprocessor(args):
     extracted
     :rtype: tuple
     """
-    pass
+    return args
