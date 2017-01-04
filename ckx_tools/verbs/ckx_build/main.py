@@ -181,8 +181,13 @@ def main(args):
     args.cmake_args = [] if args.cmake_args is None else args.cmake_args
     args.make_args = [] if args.make_args is None else args.make_args
 
+    ####################
+    # Colour
+    ####################
     if args.no_color:
-        terminal_color.disable_ANSI_colors()
+        terminal_color.set_color(False)
+    else:
+        terminal_color.set_color(True)
 
     (base_path, build_path, devel_path, source_path) = common.get_default_paths()
     doc_path = config_cache.get_doc_prefix_from_config_cmake(base_path)
