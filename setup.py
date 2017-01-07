@@ -46,6 +46,7 @@ setup(name='ckx_tools',
           'ckx_tools.commands.ckx.verbs': [
               'ws = ckx_tools.verbs.ckx_ws:description',
               'config = ckx_tools.verbs.ckx_config:description',
+              'make = ckx_tools.verbs.ckx_make:description',
               'build = ckx_tools.verbs.ckx_build:description',
               'settings = ckx_tools.verbs.ckx_settings:description',
               'isolated = ckx_tools.verbs.ckx_isolated:description',

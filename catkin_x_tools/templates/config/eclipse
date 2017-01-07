@@ -1,8 +1,0 @@
-#!/bin/bash
-
-PWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
-source ${PWD}/custom.bash
-
-# Add the full path if eclipse is not in PATH
-exec eclipse -data ~/workspace/eclipse/ckx/%(name)s

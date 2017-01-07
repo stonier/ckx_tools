@@ -8,7 +8,7 @@
 ##############################################################################
 
 """
-Module implementing the 'ckx ws' verb.
+Module implementing the 'ckx build' verb.
 """
 
 ##############################################################################
@@ -24,8 +24,8 @@ from . import main
 ##############################################################################
 
 description = dict(
-    verb='ws',
-    description="creates and populates a catkin workspace",
+    verb='make',
+    description="builds a catkin workspace (yujin legacy style)",
     main=main.main,
     prepare_arguments=main.prepare_arguments,
     argument_preprocessor=argument_preprocessor,

@@ -11,7 +11,6 @@ import subprocess
 
 import ckx_tools.common as common
 import ckx_tools.console as console
-
 from . import make_doc_html_templates
 
 ##############################################################################
