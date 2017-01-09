@@ -114,6 +114,15 @@ setup(
         'catkin_tools': [
             'notifications/resources/linux/catkin_icon.png',
             'notifications/resources/linux/catkin_icon_red.png',
+            'verbs/catkin_config/resources/cmake/*',
+            'verbs/catkin_config/resources/templates/*',
+            'verbs/catkin_config/resources/toolchains/buildroot/*',
+            'verbs/catkin_config/resources/toolchains/ubuntu/*',
+            'verbs/catkin_config/resources/toolchains/code_sourcery/*',
+            'verbs/catkin_config/resources/toolchains/nexell/*',
+            'verbs/catkin_config/resources/platforms/generic/*',
+            'verbs/catkin_config/resources/platforms/arm/*',
+            'verbs/catkin_config/resources/platforms/intel/*',
             'verbs/catkin_shell_verbs.bash',
             'docs/examples',
         ] + osx_notification_resources

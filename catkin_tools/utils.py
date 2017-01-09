@@ -16,7 +16,6 @@ from __future__ import print_function
 
 import os
 
-
 def which(program):
     """Custom version of the ``which`` built-in shell command.
 

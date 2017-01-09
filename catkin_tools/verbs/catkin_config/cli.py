@@ -15,6 +15,7 @@
 from __future__ import print_function
 
 import os
+import sys
 
 from catkin_tools.argument_parsing import add_cmake_and_make_and_catkin_make_args
 from catkin_tools.argument_parsing import add_context_args
@@ -22,6 +23,9 @@ from catkin_tools.argument_parsing import add_context_args
 from catkin_tools.context import Context
 
 from catkin_tools.terminal_color import ColorMapper
+from audioop import cross
+
+from . import utilities
 
 color_mapper = ColorMapper()
 clr = color_mapper.clr
@@ -37,42 +41,47 @@ def prepare_arguments(parser):
     # Workspace / profile args
     add_context_args(parser)
 
-    behavior_group = parser.add_argument_group('Behavior', 'Options affecting argument handling.')
-    add = behavior_group.add_mutually_exclusive_group().add_argument
-    add('--append-args', '-a', action='store_true', default=False,
-        help='For list-type arguments, append elements.')
-    add('--remove-args', '-r', action='store_true', default=False,
-        help='For list-type arguments, remove elements.')
-
-    context_group = parser.add_argument_group('Workspace Context', 'Options affecting the context of the workspace.')
-    add = context_group.add_argument
-    add('--init', action='store_true', default=False,
-        help='Initialize a workspace if it does not yet exist.')
-    add = context_group.add_mutually_exclusive_group().add_argument
+    common_group = parser.add_argument_group('Common Options', 'Most frequently used options.')
+    # add = common_group.add_argument
+    add = common_group.add_mutually_exclusive_group().add_argument
     add('--extend', '-e', dest='extend_path', type=str,
         help='Explicitly extend the result-space of another catkin workspace, '
         'overriding the value of $CMAKE_PREFIX_PATH.')
     add('--no-extend', dest='extend_path', action='store_const', const='',
         help='Un-set the explicit extension of another workspace as set by --extend.')
-    add = context_group.add_argument
-    add('--mkdirs', action='store_true', default=False,
-        help='Create directories required by the configuration (e.g. source space) if they do not already exist.')
-
-    lists_group = parser.add_argument_group(
-        'Package Build Defaults', 'Packages to include or exclude from default build behavior.')
-    add = lists_group.add_mutually_exclusive_group().add_argument
+    add = common_group.add_mutually_exclusive_group().add_argument
     add('--whitelist', metavar="PKG", dest='whitelist', nargs="+", required=False, type=str, default=None,
         help='Set the packages on the whitelist. If the whitelist is non-empty, '
         'only the packages on the whitelist are built with a bare call to '
         '`catkin build`.')
     add('--no-whitelist', dest='whitelist', action='store_const', const=[], default=None,
         help='Clear all packages from the whitelist.')
-    add = lists_group.add_mutually_exclusive_group().add_argument
+    add = common_group.add_mutually_exclusive_group().add_argument
     add('--blacklist', metavar="PKG", dest='blacklist', nargs="+", required=False, type=str, default=None,
         help='Set the packages on the blacklist. Packages on the blacklist are '
         'not built with a bare call to `catkin build`.')
     add('--no-blacklist', dest='blacklist', action='store_const', const=[], default=None,
         help='Clear all packages from the blacklist.')
+
+    cross_compiling_group = parser.add_argument_group('Cross Compiling', 'Options for configuring a cross compiling environment.')
+    add = cross_compiling_group.add_argument
+    add('--list-toolchains', action='store_true', help='list all currently available toolchain modules [false]')
+    add('--list-platforms', action='store_true', help='list all currently available platform modules [false]')
+    add('--toolchain', action='store', default=None, help='toolchain cmake module to load []')
+    add('--platform', action='store', default=None, help='platform cmake cache module to load [default]')
+
+    behavior_group = parser.add_argument_group('Advanced Argument handling', 'Options affecting argument handling.')
+    add = behavior_group.add_mutually_exclusive_group().add_argument
+    add('--append-args', '-a', action='store_true', default=False,
+        help='For list-type arguments, append elements.')
+    add('--remove-args', '-r', action='store_true', default=False,
+        help='For list-type arguments, remove elements.')
+
+    context_group = parser.add_argument_group('Advanced Workspace Control', 'Options affecting the context of the workspace.')
+    add = context_group.add_argument
+    add('--init', action='store_true', default=False,
+        help='Initialize a workspace if it does not yet exist.')
+    add = context_group.add_argument
 
     spaces_group = parser.add_argument_group('Spaces', 'Location of parts of the catkin workspace.')
     add = spaces_group.add_mutually_exclusive_group().add_argument
@@ -137,7 +146,6 @@ def prepare_arguments(parser):
 
     return parser
 
-
 def main(opts):
     try:
         # Determine if the user is trying to perform some action, in which
@@ -145,6 +153,15 @@ def main(opts):
         ignored_opts = ['main', 'verb']
         actions = [v for k, v in vars(opts).items() if k not in ignored_opts]
         no_action = not any(actions)
+
+        # Generic display functions only
+        # List toolchains or platforms
+        if opts.list_toolchains:
+            utilities.list_toolchains()
+            return 0
+        if opts.list_platforms:
+            utilities.list_platforms()
+            return 0
 
         # Try to find a metadata directory to get context defaults
         # Otherwise use the specified directory
@@ -164,14 +181,28 @@ def main(opts):
         if context.initialized() or do_init:
             Context.save(context)
 
-        if opts.mkdirs and not context.source_space_exists():
+        try:
+            config_doc_prefix = ""
+            config_underlays = ""
+            utilities.instantiate_or_update_config_environment(
+                context.profile,
+                context.workspace,
+                context.build_root_abs,
+                context.platform,
+                context.toolchain,
+                config_doc_prefix,
+                config_underlays
+            )
+        except RuntimeError as e:
+            sys.exit(clr("[config] @!@{rf}Error:@| %s") % e.message)
+
+        if not context.source_space_exists():
             os.makedirs(context.source_space_abs)
 
         print(context.summary(notes=summary_notes))
 
-    except IOError as exc:
+    except IOError as e:
         # Usually happens if workspace is already underneath another catkin_tools workspace
-        print('error: could not configure catkin workspace: %s' % exc.message)
-        return 1
+        sys.exit(clr("[config] @!@{rf}Error:@| could not configure catkin workspace: `%s`") % e.message)
 
     return 0

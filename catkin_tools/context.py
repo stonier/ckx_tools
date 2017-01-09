@@ -73,6 +73,8 @@ class Context(object):
         'catkin_make_args',
         'whitelist',
         'blacklist',
+        'platform',
+        'toolchain'
     ]
 
     KEYS = STORED_KEYS + [
@@ -209,6 +211,8 @@ class Context(object):
         catkin_make_args=None,
         whitelist=None,
         blacklist=None,
+        platform=None,
+        toolchain=None,
         **kwargs
     ):
         """Creates a new Context object, optionally initializing with parameters
@@ -251,6 +255,10 @@ class Context(object):
         :type whitelist: list
         :param blacklist: a list of packages to ignore by default
         :type blacklist: list
+        :param platform: name of a platform specific configuration from the platform library
+        :type platform: str
+        :param toolchain: name of a toolchain from the toolchain library
+        :type toolchain: str
         :raises: ValueError if workspace or source space does not exist
         """
         self.__locked = False
@@ -280,6 +288,10 @@ class Context(object):
         # Handle package whitelist/blacklist
         self.whitelist = whitelist or []
         self.blacklist = blacklist or []
+
+        # Cross compiling helpers
+        self.platform = platform
+        self.toolchain = toolchain
 
         # Handle build options
         self.devel_layout = devel_layout if devel_layout else 'linked'
@@ -439,6 +451,10 @@ class Context(object):
             [
                 clr("@{cf}Whitelisted Packages:@|        @{yf}{whitelisted_packages}@|"),
                 clr("@{cf}Blacklisted Packages:@|        @{yf}{blacklisted_packages}@|"),
+            ],
+            [
+                clr("@{cf}Platform:@|                    @{yf}{_Context__platform}@|"),
+                clr("@{cf}Toolchain:@|                   @{yf}{_Context__toolchain}@|"),
             ]
         ]
 
@@ -784,6 +800,22 @@ class Context(object):
     @blacklist.setter
     def blacklist(self, value):
         self.__blacklist = value
+
+    @property
+    def platform(self):
+        return self.__platform
+
+    @platform.setter
+    def platform(self, value):
+        self.__platform = value
+
+    @property
+    def toolchain(self):
+        return self.__toolchain
+
+    @toolchain.setter
+    def toolchain(self, value):
+        self.__toolchain = value
 
     @property
     def private_devel_path(self):
