@@ -270,11 +270,11 @@ class Context(object):
         self.source_space = Context.DEFAULT_SOURCE_SPACE if source_space is None else source_space
         # create a subdirectory for the profile if it is not the default - an alternative option
         # might be to situate these on the current directory instead, just like the regular parallel build flow
-        rel = self.profile if self.profile != metadata.DEFAULT_PROFILE_NAME else ''
-        self.log_space = os.path.join(rel, Context.DEFAULT_LOG_SPACE) if log_space is None else log_space
-        self.build_space = os.path.join(rel, Context.DEFAULT_BUILD_SPACE) if build_space is None else build_space
-        self.devel_space = os.path.join(rel, Context.DEFAULT_DEVEL_SPACE) if devel_space is None else devel_space
-        self.install_space = os.path.join(rel, Context.DEFAULT_INSTALL_SPACE) if install_space is None else install_space
+        self.build_root = self.profile if self.profile != metadata.DEFAULT_PROFILE_NAME else ''
+        self.log_space = os.path.join(self.build_root, Context.DEFAULT_LOG_SPACE) if log_space is None else log_space
+        self.build_space = os.path.join(self.build_root, Context.DEFAULT_BUILD_SPACE) if build_space is None else build_space
+        self.devel_space = os.path.join(self.build_root, Context.DEFAULT_DEVEL_SPACE) if devel_space is None else devel_space
+        self.install_space = os.path.join(self.build_root, Context.DEFAULT_INSTALL_SPACE) if install_space is None else install_space
         self.destdir = os.environ['DESTDIR'] if 'DESTDIR' in os.environ else None
 
         # Handle package whitelist/blacklist
@@ -597,6 +597,21 @@ class Context(object):
             raise RuntimeError("Setting of context members is not allowed while locked.")
         self.__build_space = value
         self.__build_space_abs = os.path.join(self.__workspace, value)
+
+    @property
+    def build_root_abs(self):
+        return self.__build_root_abs
+
+    @property
+    def build_root(self):
+        return self.__build_root
+
+    @build_root.setter
+    def build_root(self, value):
+        if self.__locked:
+            raise RuntimeError("Setting of context members is not allowed while locked.")
+        self.__build_root = value
+        self.__build_root_abs = os.path.join(self.__workspace, value) if value else self.__workspace
 
     @property
     def devel_space_abs(self):

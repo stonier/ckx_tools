@@ -401,6 +401,15 @@ def create_catkin_build_job(context, package, package_path, dependencies, force_
         ))
 
         # CMake command
+        cmake_cache_args = []
+        default_cmake_cache_path = os.path.join(context.build_root_abs, 'config.cmake')
+        if os.path.isfile(default_cmake_cache_path):
+            cmake_cache_args += ['-C' + default_cmake_cache_path]
+        cmake_toolchain_args = []
+        toolchain_module_path = os.path.join(context.build_root_abs, 'toolchain.cmake')
+        if os.path.isfile(toolchain_module_path):
+            cmake_toolchain_args += ['-DCMAKE_TOOLCHAIN_FILE=' + toolchain_module_path]
+
         stages.append(CommandStage(
             'cmake',
             [
@@ -408,8 +417,8 @@ def create_catkin_build_job(context, package, package_path, dependencies, force_
                 pkg_dir,
                 '--no-warn-unused-cli',
                 '-DCATKIN_DEVEL_PREFIX=' + devel_space,
-                '-DCMAKE_INSTALL_PREFIX=' + install_space
-            ] + context.cmake_args,
+                '-DCMAKE_INSTALL_PREFIX=' + install_space,
+            ] + cmake_cache_args + cmake_toolchain_args + context.cmake_args,
             cwd=build_space,
             logger_factory=CMakeIOBufferProtocol.factory_factory(pkg_dir),
             occupy_job=True

@@ -248,6 +248,15 @@ def create_cmake_build_job(context, package, package_path, dependencies, force_c
     ))
 
     # CMake command
+    cmake_cache_args = []
+    default_cmake_cache_path = os.path.join(context.build_root_abs, 'config.cmake')
+    if os.path.isfile(default_cmake_cache_path):
+        cmake_cache_args += ['-C' + default_cmake_cache_path]
+    cmake_toolchain_args = []
+    toolchain_module_path = os.path.join(context.build_root_abs, 'toolchain.cmake')
+    if os.path.isfile(toolchain_module_path):
+        cmake_toolchain_args += ['-DCMAKE_TOOLCHAIN_FILE=' + toolchain_module_path]
+
     makefile_path = os.path.join(build_space, 'Makefile')
     if not os.path.isfile(makefile_path) or force_cmake:
         stages.append(CommandStage(
@@ -255,8 +264,8 @@ def create_cmake_build_job(context, package, package_path, dependencies, force_c
             ([CMAKE_EXEC,
               pkg_dir,
               '--no-warn-unused-cli',
-              '-DCMAKE_INSTALL_PREFIX=' + final_path] +
-             context.cmake_args),
+              '-DCMAKE_INSTALL_PREFIX=' + final_path
+              ] + cmake_cache_args + cmake_toolchain_args + context.cmake_args),
             cwd=build_space,
             logger_factory=CMakeIOBufferProtocol.factory_factory(pkg_dir)
         ))
