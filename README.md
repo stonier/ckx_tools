@@ -1,5 +1,9 @@
-# catkin_tools
 
-Command line tools for working with [catkin](https://github.com/ros/catkin)
+# Catkin 'X' Tools [![version](https://img.shields.io/badge/version-0.1.1-blue.svg)][CHANGELOG]
 
-Documentation: http://catkin-tools.readthedocs.org/
+* x - cross compiling
+* x - extra
+* x - extreme use case
+
+[CHANGELOG]: ./CHANGELOG.md
+
