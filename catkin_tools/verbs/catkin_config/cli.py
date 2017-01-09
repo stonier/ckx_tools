@@ -106,8 +106,6 @@ def prepare_arguments(parser):
         action='store_const', dest='install_space', default=None, const=Context.DEFAULT_INSTALL_SPACE,
         help='Sets the default target install space ("install")')
     add = spaces_group.add_argument
-    add('-x', '--space-suffix',
-        help='Suffix for build, devel, and install space if they are not otherwise explicitly set.')
 
     devel_group = parser.add_argument_group(
         'Devel Space', 'Options for configuring the structure of the devel space.')

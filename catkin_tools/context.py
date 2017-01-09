@@ -78,7 +78,6 @@ class Context(object):
     KEYS = STORED_KEYS + [
         'workspace',
         'profile',
-        'space_suffix',
     ]
 
     @classmethod
@@ -208,7 +207,6 @@ class Context(object):
         use_internal_make_jobserver=True,
         use_env_cache=False,
         catkin_make_args=None,
-        space_suffix=None,
         whitelist=None,
         blacklist=None,
         **kwargs
@@ -249,8 +247,6 @@ class Context(object):
         :type use_env_cache: bool
         :param catkin_make_args: extra make arguments to be passed to make for each catkin package
         :type catkin_make_args: list
-        :param space_suffix: suffix for build, devel, and install spaces which are not explicitly set.
-        :type space_suffix: str
         :param whitelist: a list of packages to build by default
         :type whitelist: list
         :param blacklist: a list of packages to ignore by default
@@ -268,15 +264,17 @@ class Context(object):
         self.workspace = workspace
 
         self.extend_path = extend_path if extend_path else None
-        ss = '' if space_suffix is None else space_suffix
 
         self.profile = profile
 
         self.source_space = Context.DEFAULT_SOURCE_SPACE if source_space is None else source_space
-        self.log_space = Context.DEFAULT_LOG_SPACE + ss if ss or log_space is None else log_space
-        self.build_space = Context.DEFAULT_BUILD_SPACE + ss if ss or build_space is None else build_space
-        self.devel_space = Context.DEFAULT_DEVEL_SPACE + ss if ss or devel_space is None else devel_space
-        self.install_space = Context.DEFAULT_INSTALL_SPACE + ss if ss or install_space is None else install_space
+        # create a subdirectory for the profile if it is not the default - an alternative option
+        # might be to situate these on the current directory instead, just like the regular parallel build flow
+        rel = self.profile if self.profile != metadata.DEFAULT_PROFILE_NAME else ''
+        self.log_space = os.path.join(rel, Context.DEFAULT_LOG_SPACE) if log_space is None else log_space
+        self.build_space = os.path.join(rel, Context.DEFAULT_BUILD_SPACE) if build_space is None else build_space
+        self.devel_space = os.path.join(rel, Context.DEFAULT_DEVEL_SPACE) if devel_space is None else devel_space
+        self.install_space = os.path.join(rel, Context.DEFAULT_INSTALL_SPACE) if install_space is None else install_space
         self.destdir = os.environ['DESTDIR'] if 'DESTDIR' in os.environ else None
 
         # Handle package whitelist/blacklist
