@@ -44,11 +44,11 @@ def prepare_arguments(parser):
     common_group = parser.add_argument_group('Common Options', 'Most frequently used options.')
     # add = common_group.add_argument
     add = common_group.add_mutually_exclusive_group().add_argument
-    add('--extend', '-e', dest='extend_path', type=str,
-        help='Explicitly extend the result-space of another catkin workspace, '
+    add('--underlays', '-u', dest='underlays', type=str,
+        help='Explicitly extend the result-space of other catkin workspace underlays, '
         'overriding the value of $CMAKE_PREFIX_PATH.')
-    add('--no-extend', dest='extend_path', action='store_const', const='',
-        help='Un-set the explicit extension of another workspace as set by --extend.')
+    add('--no-underlays', dest='underlays', action='store_const', const='',
+        help='Un-set the explicit extension of other workspace underlays as set by --underlays.')
     add = common_group.add_mutually_exclusive_group().add_argument
     add('--whitelist', metavar="PKG", dest='whitelist', nargs="+", required=False, type=str, default=None,
         help='Set the packages on the whitelist. If the whitelist is non-empty, '
@@ -180,21 +180,19 @@ def main(opts):
 
         if context.initialized() or do_init:
             Context.save(context)
-
-        try:
-            config_doc_prefix = ""
-            config_underlays = ""
-            utilities.instantiate_or_update_config_environment(
-                context.profile,
-                context.workspace,
-                context.build_root_abs,
-                context.platform,
-                context.toolchain,
-                config_doc_prefix,
-                config_underlays
-            )
-        except RuntimeError as e:
-            sys.exit(clr("[config] @!@{rf}Error:@| %s") % e.message)
+            try:
+                config_doc_prefix = ""
+                utilities.instantiate_or_update_config_environment(
+                    context.profile,
+                    context.workspace,
+                    context.build_root_abs,
+                    context.platform,
+                    context.toolchain,
+                    config_doc_prefix,
+                    context.underlays
+                )
+            except RuntimeError as e:
+                sys.exit(clr("[config] @!@{rf}Error:@| %s") % e.message)
 
         if not context.source_space_exists():
             os.makedirs(context.source_space_abs)

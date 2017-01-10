@@ -395,7 +395,8 @@ def get_metadata(workspace_path, profile, verb):
         return dict()
 
     with open(metadata_file_path, 'r') as metadata_file:
-        return yaml.load(metadata_file)
+        result = yaml.load(metadata_file)
+        return result
 
 
 def update_metadata(workspace_path, profile, verb, new_data={}, no_init=False, merge=True):

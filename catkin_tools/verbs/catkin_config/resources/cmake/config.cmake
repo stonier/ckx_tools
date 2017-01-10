@@ -6,7 +6,6 @@
 ###########################
 # Parameterised Variables
 ###########################
-set(CKX_UNDERLAYS "%(config_underlays)s" CACHE PATH "Semi-colon separated list of underlay roots.")
 set(CKX_DOC_PREFIX "%(config_doc_prefix)s" CACHE PATH "Document root location")
 
 ###########################
@@ -16,7 +15,6 @@ set(CKX_DOC_PREFIX "%(config_doc_prefix)s" CACHE PATH "Document root location")
 set(CMAKE_VERBOSE_MAKEFILE FALSE CACHE BOOL "Verbosity in the makefile compilations.")
 # CMake's default buidl type is RelWithDebInfo, others include [Debug, Release, MinSizeRel]
 set(CMAKE_BUILD_TYPE %(config_build_type)s CACHE STRING "Build mode type.")
-set(CMAKE_PREFIX_PATH "${CKX_UNDERLAYS}" CACHE PATH "semi-colon separated software/ros workspace paths.")
 
 # You can define neither CMAKE_CXX_FLAGS or CMAKE_CXX_FLAGS_INIT in the cache. They just
 # get emptied by the cmake platform and compiler modules. We workaround this by dumping
@@ -36,10 +34,14 @@ set(Boost_DETAILED_FAILURE_MSG FALSE CACHE BOOL "Detailed failure reports from b
 # Catkin
 ###########################
 #
-# Note that the following variables are controlled externally and overriden by
+# The following cmake variables are controlled externally and overriden by
 # catkin build commands. Do not set them here.
 #
 #  - CMAKE_INSTALL_PREFIX
 #  - CATKIN_DEVEL_PREFIX
-#  - CATKIN_BLACKLIST_PACKAGES "List of ';' separated packages to exclude"
-#  - CATKIN_WHITELIST_PACKAGES "List of ';' separated packages to build (must be a complete list)"
+
+# The cmake prefix path, however will supplement whatever the catkin build command specifies.
+# By and large, the usual method though will be to configure your underlay path list from outside.
+# Example with a combination devel/install space. Start with the highest level workspace.
+#
+# set(CMAKE_PREFIX_PATH "/home/snorri/foo_ws/devel;/opt/ros/kinetic" CACHE PATH "semi-colon separated software/ros workspace paths.")

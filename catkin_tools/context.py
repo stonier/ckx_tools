@@ -56,7 +56,7 @@ class Context(object):
     DEFAULT_INSTALL_SPACE = 'install'
 
     STORED_KEYS = [
-        'extend_path',
+        'underlays',
         'source_space',
         'log_space',
         'build_space',
@@ -194,7 +194,7 @@ class Context(object):
         self,
         workspace=None,
         profile=None,
-        extend_path=None,
+        underlays=None,
         source_space=None,
         log_space=None,
         build_space=None,
@@ -221,8 +221,8 @@ class Context(object):
         :type workspace: str
         :param profile: profile name, defaults to the default profile
         :type profile: str
-        :param extend_path: catkin result-space to extend
-        :type extend_path: str
+        :param underlays: semi-colon separated list of catkin workspace underlays
+        :type underlays: str
         :param source_space: relative location of source space, defaults to '<workspace>/src'
         :type source_space: str
         :param log_space: relative location of log space, defaults to '<workspace>/logs'
@@ -271,7 +271,7 @@ class Context(object):
         # Handle *space assignment and defaults
         self.workspace = workspace
 
-        self.extend_path = extend_path if extend_path else None
+        self.underlays = underlays if underlays else None
 
         self.profile = profile
 
@@ -341,12 +341,21 @@ class Context(object):
 
         # Either load an explicit environment or get it from the current environment
         self.env_cmake_prefix_path = ''
-        if self.extend_path:
-            extended_env = get_resultspace_environment(self.extend_path, quiet=False)
-            self.env_cmake_prefix_path = extended_env.get('CMAKE_PREFIX_PATH', '')
+        underlays_unique = set()
+        if self.underlays:
+            for underlay_path in self.underlays.split(";"):
+                try:
+                    extended_env = get_resultspace_environment(underlay_path, quiet=False)
+                    underlay_cmake_prefix_path = set(extended_env.get('CMAKE_PREFIX_PATH', '').split(';'))
+                    underlays_unique = underlays_unique.union(underlay_cmake_prefix_path)
+                except IOError as e:
+                    # quietly continue - cmake is quite ok if the CMAKE_PREFIX_PATH is overpopulated so
+                    # let's not increase the constraints there
+                    print(clr("@!@{yf}Warning:@| %s" % str(e)))
+            self.env_cmake_prefix_path = ';'.join(underlays_unique)
             if not self.env_cmake_prefix_path:
                 print(clr("@!@{rf}Error:@| Could not load environment from workspace: '%s', "
-                          "target environment (env.sh) does not provide 'CMAKE_PREFIX_PATH'" % self.extend_path))
+                          "target environment (env.sh) does not provide 'CMAKE_PREFIX_PATH'" % self.underlays))
                 print(extended_env)
                 sys.exit(1)
         else:
@@ -363,19 +372,21 @@ class Context(object):
 
         # Add warning for empty extend path
         if (self.devel_layout == 'linked' and
-            (self.extend_path is None and
+            (self.underlays is None and
              not self.cached_cmake_prefix_path and
              not self.env_cmake_prefix_path)):
             self.warnings += [clr(
-                "Your workspace is not extending any other result space, but "
+                "Your workspace is not using any underlays, but "
                 "it is set to use a `linked` devel space layout. This "
                 "requires the `catkin` CMake package in your source space "
                 "in order to be built.")]
 
-        # Add warnings based on conflicing CMAKE_PREFIX_PATH
-        elif self.cached_cmake_prefix_path and self.extend_path:
-            ep_not_in_lcpp = any([self.extend_path in p for p in self.cached_cmake_prefix_path.split(':')])
-            if not ep_not_in_lcpp:
+        # Add warnings based on conflicting CMAKE_PREFIX_PATH
+        elif self.cached_cmake_prefix_path and self.underlays:
+            up_in_lcpp = True
+            for underlay_path in self.underlays:
+                up_in_lcpp = up_in_lcpp and any([underlay_path in p for p in self.cached_cmake_prefix_path.split(';')])
+            if not up_in_lcpp:
                 self.warnings += [clr(
                     "Your workspace is configured to explicitly extend a "
                     "workspace which yields a CMAKE_PREFIX_PATH which is "
@@ -385,7 +396,7 @@ class Context(object):
                     "should call @{yf}`catkin clean`@| to remove all "
                     "references to the previous CMAKE_PREFIX_PATH.\\n\\n"
                     "@{cf}Cached CMAKE_PREFIX_PATH:@|\\n\\t@{yf}%s@|\\n"
-                    "@{cf}Other workspace to extend:@|\\n\\t@{yf}{_Context__extend_path}@|\\n"
+                    "@{cf}Other workspace to extend:@|\\n\\t@{yf}{_Context__underlays}@|\\n"
                     "@{cf}Other workspace's CMAKE_PREFIX_PATH:@|\\n\\t@{yf}%s@|"
                     % (self.cached_cmake_prefix_path, self.env_cmake_prefix_path))]
 
@@ -426,7 +437,7 @@ class Context(object):
         summary = [
             [
                 clr("@{cf}Profile:@|                     @{yf}{profile}@|"),
-                clr("@{cf}Extending:@|        {extend_mode} @{yf}{extend}@|"),
+                clr("@{cf}Underlays:@|        {underlay_mode} @{yf}{underlays}@|"),
                 clr("@{cf}Workspace:@|                   @{yf}{_Context__workspace}@|"),
             ],
             [
@@ -459,20 +470,20 @@ class Context(object):
         ]
 
         # Construct string for extend value
-        if self.extend_path:
-            extend_value = self.extend_path
-            extend_mode = clr('@{gf}[explicit]@|')
+        if self.underlays:
+            underlay_value = self.underlays
+            underlay_mode = clr('@{gf}[explicit]@|')
         elif self.cached_cmake_prefix_path:
-            extend_value = self.cmake_prefix_path
-            extend_mode = clr('  @{gf}[cached]@|')
+            underlay_value = self.cmake_prefix_path
+            underlay_mode = clr('  @{gf}[cached]@|')
         elif (self.env_cmake_prefix_path and
                 self.env_cmake_prefix_path != self.devel_space_abs and
                 self.env_cmake_prefix_path != self.install_space_abs):
-            extend_value = self.cmake_prefix_path
-            extend_mode = clr('     @{gf}[env]@|')
+            underlay_value = self.cmake_prefix_path
+            underlay_mode = clr('     @{gf}[env]@|')
         else:
-            extend_value = 'None'
-            extend_mode = clr('          ')
+            underlay_value = 'None'
+            underlay_mode = clr('          ')
 
         def existence_str(path, used=True):
             if used:
@@ -486,8 +497,8 @@ class Context(object):
 
         subs = {
             'profile': self.profile,
-            'extend_mode': extend_mode,
-            'extend': extend_value,
+            'underlay_mode': underlay_mode,
+            'underlays': underlay_value,
             'install_layout': install_layout,
             'cmake_prefix_path': (self.cmake_prefix_path or ['Empty']),
             'cmake_args': ' '.join(self.__cmake_args or ['None']),
@@ -547,19 +558,20 @@ class Context(object):
         self.__workspace = os.path.abspath(value)
 
     @property
-    def extend_path(self):
-        return self.__extend_path
+    def underlays(self):
+        return self.__underlays
 
-    @extend_path.setter
-    def extend_path(self, value):
-        if value is not None:
-            if not os.path.isabs(value):
-                value = os.path.join(self.workspace, value)
-            # remove double or trailing slashes
-            value = os.path.normpath(value)
-            if not os.path.exists(value):
-                raise ValueError("Resultspace path '{0}' does not exist.".format(value))
-        self.__extend_path = value
+    @underlays.setter
+    def underlays(self, value):
+#         if value is not None:
+#             for v in value.split(';'):
+#                 if not os.path.isabs(v):
+#                     v = os.path.join(self.workspace, v)
+#                 # remove double or trailing slashes
+#                 v = os.path.normpath(v)
+#                 if not os.path.exists(v):
+#                     raise ValueError("Resultspace path '{0}' does not exist.".format(v))
+        self.__underlays = value
 
     @property
     def source_space_abs(self):

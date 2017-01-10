@@ -177,22 +177,31 @@ def get_resultspace_environment(result_space_path, base_env=None, quiet=False, c
     return dict(env_dict)
 
 
-def load_resultspace_environment(result_space_path, base_env=None, cached=True):
+def load_resultspace_environment(underlays, base_env=None, cached=True):
     """Load the environemt variables which result from sourcing another
     workspace path into this process's environment.
 
-    :param result_space_path: path to a Catkin result-space whose environment should be loaded, ``str``
-    :type result_space_path: str
+    :param underlays: semi-colon separated list of underlays
+    :type underlays: str
     :param cached: use the cached environment
     :type cached: bool
     """
-    env_dict = get_resultspace_environment(result_space_path, base_env=base_env, cached=cached)
-    try:
-        os.environ.update(env_dict)
-    except TypeError:
-        for k, v in env_dict.items():
+    for underlay_path in underlays.split(";"):
+        try:
+            env_dict = get_resultspace_environment(underlay_path, base_env=base_env, cached=cached)
             try:
-                os.environ.update({k: v.decode()})
-            except TypeError as err:
-                print({k: v})
-                raise err
+                os.environ.update(env_dict)
+            except TypeError:
+                for k, v in env_dict.items():
+                    try:
+                        os.environ.update({k: v.decode()})
+                    except TypeError as err:
+                        print({k: v})
+                        raise err
+        except IOError as unused_e:
+            # quietly continue - cmake is quite ok if the CMAKE_PREFIX_PATH is overpopulated so
+            # let's not increase the constraints there
+            pass
+        except RuntimeError as unused_e:
+            # as above
+            pass

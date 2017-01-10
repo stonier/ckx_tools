@@ -307,12 +307,8 @@ def main(opts):
     ctx.make_args = make_args
 
     # Load the environment of the workspace to extend
-    if ctx.extend_path is not None:
-        try:
-            load_resultspace_environment(ctx.extend_path)
-        except IOError as exc:
-            sys.exit(clr("[build] @!@{rf}Error:@| Unable to extend workspace from \"%s\": %s" %
-                         (ctx.extend_path, exc.message)))
+    if ctx.underlays is not None:
+        load_resultspace_environment(ctx.underlays)
 
     # Check if the context is valid before writing any metadata
     if not ctx.source_space_exists():
