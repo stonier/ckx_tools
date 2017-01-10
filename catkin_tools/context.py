@@ -388,17 +388,11 @@ class Context(object):
                 up_in_lcpp = up_in_lcpp and any([underlay_path in p for p in self.cached_cmake_prefix_path.split(';')])
             if not up_in_lcpp:
                 self.warnings += [clr(
-                    "Your workspace is configured to explicitly extend a "
-                    "workspace which yields a CMAKE_PREFIX_PATH which is "
-                    "different from the cached CMAKE_PREFIX_PATH used last time "
-                    "this workspace was built.\\n\\n"
-                    "If you want to use a different CMAKE_PREFIX_PATH you "
-                    "should call @{yf}`catkin clean`@| to remove all "
-                    "references to the previous CMAKE_PREFIX_PATH.\\n\\n"
-                    "@{cf}Cached CMAKE_PREFIX_PATH:@|\\n\\t@{yf}%s@|\\n"
-                    "@{cf}Other workspace to extend:@|\\n\\t@{yf}{_Context__underlays}@|\\n"
-                    "@{cf}Other workspace's CMAKE_PREFIX_PATH:@|\\n\\t@{yf}%s@|"
-                    % (self.cached_cmake_prefix_path, self.env_cmake_prefix_path))]
+                    "One or more of your underlays is not contributing to the "
+                    "cached CMAKE_PREFIX_PATH. Is it missing or not built yet?\\n\\n"
+                    "@{cf}Underlays                 :@{yf}{_Context__underlays}@|\\n"
+                    "@{cf}Cached CMAKE_PREFIX_PATH: @|@{yf}%s@|"
+                    % (self.cached_cmake_prefix_path))]
 
         elif self.env_cmake_prefix_path and\
                 self.cached_cmake_prefix_path and\
