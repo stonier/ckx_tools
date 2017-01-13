@@ -311,6 +311,12 @@ def remove_profile(workspace_path, profile_name):
 
     if os.path.exists(profile_path):
         shutil.rmtree(profile_path)
+    if profile_name != DEFAULT_PROFILE_NAME:
+        shutil.rmtree(os.path.join(workspace_path, profile_name))
+    else:
+        # clean up config files
+        for filename in ['config.cmake', 'eclipse', 'custom.bash', 'konsole', 'gnome-terminal']:
+            os.remove(os.path.join(workspace_path, filename))
 
 
 def set_active_profile(workspace_path, profile_name):

@@ -319,7 +319,6 @@ class Context(object):
         self.cmake_prefix_path = None
 
     def load_env(self):
-
         # Check for CMAKE_PREFIX_PATH in manual cmake args
         self.manual_cmake_prefix_path = ''
         for cmake_arg in self.cmake_args:
@@ -342,6 +341,7 @@ class Context(object):
         # Either load an explicit environment or get it from the current environment
         self.env_cmake_prefix_path = ''
         underlays_unique = set()
+        extended_env = {}
         if self.underlays:
             for underlay_path in self.underlays.split(";"):
                 try:
@@ -349,14 +349,12 @@ class Context(object):
                     underlay_cmake_prefix_path = set(extended_env.get('CMAKE_PREFIX_PATH', '').split(';'))
                     underlays_unique = underlays_unique.union(underlay_cmake_prefix_path)
                 except IOError as e:
-                    # quietly continue - cmake is quite ok if the CMAKE_PREFIX_PATH is overpopulated so
-                    # let's not increase the constraints there
+                    # quietly continue - cmake is quite ok if the CMAKE_PREFIX_PATH is overpopulated
                     print(clr("@!@{yf}Warning:@| %s" % str(e)))
             self.env_cmake_prefix_path = ';'.join(underlays_unique)
             if not self.env_cmake_prefix_path:
-                print(clr("@!@{rf}Error:@| Could not load environment from workspace: '%s', "
-                          "target environment (env.sh) does not provide 'CMAKE_PREFIX_PATH'" % self.underlays))
-                print(extended_env)
+                print(clr("@!@{rf}Error:@| Could not load any environment from workspace underlays: '%s', "
+                          % self.underlays))
                 sys.exit(1)
         else:
             # Get the current CMAKE_PREFIX_PATH
