@@ -71,7 +71,7 @@ def instantiate_or_update_session_scripts(name, build_root_dir, workspace_dir):
                 os.fchmod(f.fileno(), stat.S_IRWXU | stat.S_IRWXG)
                 f.close()
 
-def fill_in_config_cmake(template, config_build_type, config_doc_prefix, config_underlays, config_override_file):
+def fill_in_config_cmake(template, config_workspace, config_build_type, config_doc_prefix, config_underlays, config_override_file):
     return template % locals()
 
 def instantiate_or_update_config_environment(
@@ -108,6 +108,7 @@ def instantiate_or_update_config_environment(
     # this can throw a RuntimeError if the platform configuration is not found
     instantiate_or_update_config_cmake(
         platform,
+        workspace_dir,
         build_root_dir,
         doc_prefix,
         underlays
@@ -119,7 +120,7 @@ def instantiate_or_update_config_environment(
     )
 
 
-def instantiate_or_update_config_cmake(platform_name, build_root_dir, config_doc_prefix, config_underlays):
+def instantiate_or_update_config_cmake(platform_name, workspace_dir, build_root_dir, config_doc_prefix, config_underlays):
     '''
     Copy the cache configuration template to the build path.
 
@@ -135,7 +136,7 @@ def instantiate_or_update_config_cmake(platform_name, build_root_dir, config_doc
         # TODO : validate an existing cache file to make sure it hasn't been unintentially put in a conflicting state by the user
         return
     raw_content = file_to_string(config_cache_filename)
-    contents = fill_in_config_cmake(raw_content, config_build_type, config_doc_prefix, config_underlays, overrides_filename)
+    contents = fill_in_config_cmake(raw_content, workspace_dir, config_build_type, config_doc_prefix, config_underlays, overrides_filename)
     config_cmake_file = os.path.join(build_root_dir, "config.cmake")
     try:
         f = open(config_cmake_file, 'w')

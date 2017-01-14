@@ -7,6 +7,7 @@
 # Parameterised Variables
 ###########################
 set(CKX_DOC_PREFIX "%(config_doc_prefix)s" CACHE PATH "Document root location")
+set(CKX_WORKSPACE "%(config_workspace)s" CACHE PATH "Location of the associated workspace")
 
 ###########################
 # CMake
