@@ -15,7 +15,8 @@
 from __future__ import print_function
 
 import os
-import sys
+
+import catkin_tools.metadata as metadata
 
 from catkin_tools.argument_parsing import add_cmake_and_make_and_catkin_make_args
 from catkin_tools.argument_parsing import add_context_args
@@ -44,7 +45,7 @@ def prepare_arguments(parser):
     common_group = parser.add_argument_group('Common Options', 'Most frequently used options.')
     # add = common_group.add_argument
     add = common_group.add_mutually_exclusive_group().add_argument
-    add('--underlays', '-u', dest='underlays', type=str,
+    add('--underlays', '-u', dest='underlays', type=str, default=None,
         help='Explicitly extend the result-space of other catkin workspace underlays, '
         'overriding the value of $CMAKE_PREFIX_PATH.')
     add('--no-underlays', dest='underlays', action='store_const', const='',
@@ -166,7 +167,8 @@ def main(opts):
                     context.underlays
                 )
             except RuntimeError as e:
-                sys.exit(clr("[config] @!@{rf}Error:@| %s") % e.message)
+                print(clr("[config] @!@{rf}Error:@| %s") % e.message)
+                return 1
 
         if not context.source_space_exists():
             os.makedirs(context.source_space_abs)
@@ -175,6 +177,7 @@ def main(opts):
 
     except IOError as e:
         # Usually happens if workspace is already underneath another catkin_tools workspace
-        sys.exit(clr("[config] @!@{rf}Error:@| could not configure catkin workspace: `%s`") % e.message)
+        print(clr("[config] @!@{rf}Error:@| could not configure catkin workspace: `%s`") % e.message)
+        return 1
 
     return 0

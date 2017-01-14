@@ -20,6 +20,7 @@ import os
 import re
 import sys
 
+from . import common
 from . import metadata
 
 from .common import getcwd
@@ -152,6 +153,12 @@ class Context(object):
         if workspace:
             config_metadata = metadata.get_metadata(workspace, profile, 'config')
             context_args.update(config_metadata)
+
+        # has not been stored before, take the chance to do some initialisations
+        if not config_metadata:
+            # if --no-underlays is set, then opts_vars['underlays'] == '' is True
+            if 'underlays' not in opts_vars or opts_vars['underlays'] is None:
+                opts_vars['underlays'] = common.get_default_underlay()
 
         # User-supplied args are used to update stored args
         # Only update context args with given opts which are not none

@@ -134,6 +134,7 @@ def main(opts):
                 workspace_dir or os.getcwd(),
                 opts.clean)
             ctx = Context.load(workspace_dir)
+
             init_sources(sources_dir)
             initialised_new_workspace = True
         else:

@@ -70,6 +70,20 @@ LTS_TRACKS = ["kinetic", "indigo"]
 # Classes and Methods
 ##############################################################################
 
+def get_default_underlay():
+    """
+    Make an educated guess to what track should be used as a default underlay.
+    """
+    root_path = os.path.abspath(os.sep)
+    for track in LTS_TRACKS:
+        underlay = os.path.join(root_path, "opt", "ros", track)
+        if os.path.isdir(underlay):
+            return underlay
+    for track in VALID_TRACKS:
+        underlay = os.path.join(root_path, "opt", "ros", track)
+        if os.path.isdir(underlay):
+            return underlay
+
 def get_default_track():
     """
     Make an educated guess to what track should be used by a quick scan of the
