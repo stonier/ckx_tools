@@ -248,7 +248,6 @@ def init_metadata_root(workspace_path, reset=False):
     if not os.path.exists(os.path.join(metadata_root_path, 'CATKIN_IGNORE')):
         open(os.path.join(metadata_root_path, 'CATKIN_IGNORE'), 'a').close()
 
-
 def init_profile(workspace_path, profile_name, reset=False):
     """Initialize a profile directory in a given workspace.
 

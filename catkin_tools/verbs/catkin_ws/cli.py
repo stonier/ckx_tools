@@ -115,10 +115,22 @@ def main(opts):
         return 0
 
     ########################################
+    # Clean all build/profile information
+    ########################################
+    workspace_dir = opts.dir if os.path.isabs(opts.dir) else os.path.join(os.getcwd(), opts.dir)
+    if opts.clean:
+        profile_names = metadata.get_profile_names(workspace_dir)
+        for name in profile_names:
+            metadata.remove_profile(workspace_dir, name)
+        metadata.init_metadata_root(
+            workspace_path=workspace_dir,
+            reset=True)
+        return 0
+
+    ########################################
     # Check/Init a Workspace
     ########################################
     initialised_new_workspace = False
-    workspace_dir = opts.dir if os.path.isabs(opts.dir) else os.path.join(os.getcwd(), opts.dir)
     sources_dir = os.path.join(workspace_dir, 'src')
     try:
         # Try to load an existing context
@@ -129,10 +141,10 @@ def main(opts):
             print('Initializing catkin workspace in `%s`.' % (workspace_dir or os.getcwd()))
             if not os.path.isdir(workspace_dir):
                 os.mkdir(workspace_dir)
-            # initialize the workspace
+            # Init the metadata
             metadata.init_metadata_root(
-                workspace_dir or os.getcwd(),
-                opts.clean)
+                workspace_path=workspace_dir or os.getcwd(),
+                reset=False)
             ctx = Context.load(workspace_dir)
 
             init_sources(sources_dir)
