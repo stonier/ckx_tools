@@ -69,7 +69,10 @@ def create_subparsers(parser, verbs):
 
     for verb in verbs:
         desc = load_verb_description(verb)
-        cmd_parser = subparser.add_parser(desc['verb'], description=desc['description'])
+        cmd_parser = subparser.add_parser(desc['verb'],
+                                          description=desc['description'],
+                                          formatter_class=argparse.RawDescriptionHelpFormatter
+                                          )
         cmd_parser = desc['prepare_arguments'](cmd_parser)
 
         cmd_parser.set_defaults(main=desc['main'])

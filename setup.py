@@ -15,6 +15,8 @@ install_requires = [
     'setuptools',
     'PyYAML',
     'osrf-pycommon > 0.1.1',
+    'rospkg',
+    'wstool'
 ]
 if sys.version_info[0] == 2 and sys.version_info[1] <= 6:
     install_requires.append('argparse')
@@ -159,6 +161,7 @@ setup(
             'list = catkin_tools.verbs.catkin_list:description',
             'locate = catkin_tools.verbs.catkin_locate:description',
             'profile = catkin_tools.verbs.catkin_profile:description',
+            'ws = catkin_tools.verbs.catkin_ws:description',
         ],
         'catkin_tools.jobs': [
             'catkin = catkin_tools.jobs.catkin:description',

@@ -14,14 +14,14 @@ if [ "${VIRTUAL_ENV}" == "" ]; then
     pip install catkin_pkg
     pip install pyyaml
     pip install wstool
+    pip install rospkg
   fi
 fi
 # Always pulling for now
-echo "Pulling external roles"
 python setup.py develop
 
 echo ""
-echo "Leave the virutal environment with 'deactivate'"
+echo "Leave the virtual environment with 'deactivate'"
 echo ""
 echo "I'm grooty, you should be too."
 echo ""
