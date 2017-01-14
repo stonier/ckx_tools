@@ -42,9 +42,9 @@ overrides_filename = os.path.join(os.path.dirname(__file__), 'resources', 'cmake
 
 templates_home = os.path.join(os.path.dirname(__file__), 'resources', 'templates')
 toolchains_home = os.path.join(os.path.dirname(__file__), 'resources', 'toolchains')
-custom_toolchains_home = os.path.join(catkin_tools.config.catkin_config_path, 'toolchains')
+custom_toolchains_home = os.path.join(catkin_tools.config.home(), 'toolchains')
 platforms_home = os.path.join(os.path.dirname(__file__), 'resources', 'platforms')
-custom_platforms_home = os.path.join(catkin_tools.config.catkin_config_path, 'platforms')
+custom_platforms_home = os.path.join(catkin_tools.config.home(), 'platforms')
 
 
 def file_to_string(filename):

@@ -67,26 +67,8 @@ VALID_TRACKS = ["kinetic", "jade", "indigo", "hydro", "groovy"]
 LTS_TRACKS = ["kinetic", "indigo"]
 
 ##############################################################################
-# Settings (Common)
+# Classes and Methods
 ##############################################################################
-# Simple file-value configuration in the user's home directory. If the need
-# for configuration becomes more complex, shift to something better.
-# Note that some of the verbs have some of their own configuration (e.g.
-# workspaces)
-
-def ckx_tools_home():
-    """
-    Get directory location of '.ckx_tools' directory.
-
-    @return: path to use use for the settings directory
-    @rtype: str
-    """
-    home_dir = os.path.join(os.path.expanduser('~'), '.ckx_tools')
-    if not os.path.exists(home_dir):
-        if os.path.isfile(home_dir):
-            raise RuntimeError("the ckx tools home ({0}) exists but is a file.".format(home_dir))
-        os.makedirs(home_dir)
-    return home_dir
 
 def get_default_track():
     """

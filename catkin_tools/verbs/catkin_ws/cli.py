@@ -17,6 +17,7 @@ Implementation of the 'ckx ws' verb.
 
 import argparse
 import catkin_tools.common as common
+import catkin_tools.config as config
 import catkin_tools.argument_parsing as argument_parsing
 import catkin_tools.console as console
 import catkin_tools.metadata as metadata
@@ -200,7 +201,7 @@ def main(opts):
 DEFAULT_ROSINSTALL_DATABASE = 'https://raw.github.com/stonier/ckx_tools/rosinstalls'
 
 def get_rosinstall_database_uri():
-    filename = os.path.join(common.ckx_tools_home(), "rosinstall_database")
+    filename = os.path.join(config.home(), "rosinstall_database")
     try:
         f = open(filename, 'r')
     except IOError:
@@ -214,7 +215,7 @@ def set_rosinstall_database_uri(rosinstall_database=DEFAULT_ROSINSTALL_DATABASE)
       Set a uri for your rosinstall database.
     '''
     # could actually check that it is a valid uri though.
-    filename = os.path.join(common.ckx_tools_home(), "rosinstall_database")
+    filename = os.path.join(config.home(), "rosinstall_database")
     f = open(filename, 'w+')
     try:
         f.write(rosinstall_database.encode('utf-8'))
