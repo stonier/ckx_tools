@@ -46,6 +46,7 @@ from catkin_tools.common import format_env_dict
 
 from catkin_tools.context import Context
 
+import catkin_tools.metadata as metadata
 import catkin_tools.execution.job_server as job_server
 
 from catkin_tools.jobs.utils import get_env_loader
@@ -286,6 +287,18 @@ def main(opts):
 
     if opts.no_deps and not opts.packages and not opts.unbuilt:
         sys.exit(clr("[build] @!@{rf}Error:@| With --no-deps, you must specify packages to build."))
+
+    if not opts.profile:
+        enclosing_workspace = find_enclosing_workspace(getcwd())
+        expected_workspace = find_enclosing_workspace(opts.workspace or getcwd())
+        if enclosing_workspace and enclosing_workspace == expected_workspace:
+            cwd = os.getcwdu()
+            parent_path = os.path.abspath(os.path.join(cwd, os.pardir))
+            candidate_profile_name = os.path.basename(cwd)
+            if parent_path == enclosing_workspace and candidate_profile_name in metadata.get_profile_names(enclosing_workspace):
+                active_profile = metadata.get_active_profile(enclosing_workspace)
+                print(clr("@!@{yf}\nWarning: overriding active profile with command line argument [%s->%s]\n@|" % (active_profile, candidate_profile_name)))
+                opts.profile = candidate_profile_name
 
     # Load the context
     ctx = Context.load(opts.workspace, opts.profile, opts, append=True)
