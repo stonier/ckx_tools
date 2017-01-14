@@ -464,6 +464,10 @@ class Context(object):
         # Construct string for extend value
         if self.underlays:
             underlay_value = self.underlays
+            if self.cached_cmake_prefix_path:
+                if self.cached_cmake_prefix_path != self.underlays:
+                    underlay_value += '\n' + ' '*20
+                    underlay_value += clr('@{rf}[cached] @|@{yf}%s@|' % self.cached_cmake_prefix_path)
             underlay_mode = clr('@{gf}[explicit]@|')
         elif self.cached_cmake_prefix_path:
             underlay_value = self.cmake_prefix_path
