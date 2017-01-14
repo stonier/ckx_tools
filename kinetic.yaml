@@ -47,5 +47,6 @@ _catkin: 'https://raw.github.com/stonier/ckx_tools/rosinstalls/kinetic/catkin.ro
 # ros core
 catkin: [_catkin]
 ecl: 'https://raw.github.com/stonier/ckx_tools/rosinstalls/kinetic/ecl.rosinstall'
+ecl_lite: 'https://raw.github.com/stonier/ckx_tools/rosinstalls/kinetic/ecl_lite.rosinstall'
 yaml_cpp: 'https://raw.github.com/stonier/ckx_tools/rosinstalls/kinetic/yaml_cpp.rosinstall'
 
