@@ -105,19 +105,24 @@ the --save-config argument. To see the current config, use the
 
     # Workspace / profile args
     add_context_args(parser)
-    # Sub-commands
-    add = parser.add_argument
-    add('--dry-run', '-n', action='store_true', default=False,
-        help='List the packages which will be built with the given arguments without building them.')
-    add('--get-env', dest='get_env', metavar='PKGNAME', nargs=1,
-        help='Print the environment in which PKGNAME is built to stdout.')
 
-    # What packages to build
-    pkg_group = parser.add_argument_group('Packages', 'Control which packages get built.')
-    add = pkg_group.add_argument
+    common_group = parser.add_argument_group('Common Options', 'Most frequently used options.')
+    add = common_group.add_argument
+    add('--verbose', '-v', action='store_true', default=False,
+        help='Print output from commands in ordered blocks once the command finishes.')
+    add('--force-cmake', action='store_true', default=None,
+        help='Runs cmake explicitly for each catkin package.')
+    add('--pre-clean', action='store_true', default=None,
+        help='Runs `make clean` before building each package.')
+    add('--install', action='store_true', dest='install_only_this_time', default=None,
+        help='Enable installation after the build has finished (overrides config settings)')
     add('packages', metavar='PKGNAME', nargs='*',
         help='Workspace packages to build, package dependencies are built as well unless --no-deps is used. '
              'If no packages are given, then all the packages are built.')
+
+    # What packages to build
+    pkg_group = parser.add_argument_group('Advanced Package Control', 'Control which packages get built.')
+    add = pkg_group.add_argument
     add('--this', dest='build_this', action='store_true', default=False,
         help='Build the package containing the current working directory.')
     add('--no-deps', action='store_true', default=False,
@@ -137,26 +142,20 @@ the --save-config argument. To see the current config, use the
              'packages fail to build.')
 
     # Build options
-    build_group = parser.add_argument_group('Build', 'Control the build behavior.')
+    build_group = parser.add_argument_group('Advanced Build Options', 'Control the build behavior.')
     add = build_group.add_argument
-    add('--force-cmake', action='store_true', default=None,
-        help='Runs cmake explicitly for each catkin package.')
-    add('--pre-clean', action='store_true', default=None,
-        help='Runs `make clean` before building each package.')
     add('--no-install-lock', action='store_true', default=None,
         help='Prevents serialization of the install steps, which is on by default to prevent file install collisions')
 
-    config_group = parser.add_argument_group('Config', 'Parameters for the underlying build system.')
+    config_group = parser.add_argument_group('Advanced Configuration', 'Parameters for the underlying build system.')
     add = config_group.add_argument
     add('--save-config', action='store_true', default=False,
         help='Save any configuration options in this section for the next build invocation.')
     add_cmake_and_make_and_catkin_make_args(config_group)
 
     # Behavior
-    behavior_group = parser.add_argument_group('Interface', 'The behavior of the command-line interface.')
+    behavior_group = parser.add_argument_group('Advanced Interface Options', 'The behavior of the command-line interface.')
     add = behavior_group.add_argument
-    add('--verbose', '-v', action='store_true', default=False,
-        help='Print output from commands in ordered blocks once the command finishes.')
     add('--interleave-output', '-i', action='store_true', default=False,
         help='Prevents ordering of command output when multiple commands are running at the same time.')
     add('--no-status', action='store_true', default=False,
@@ -168,13 +167,16 @@ the --save-config argument. To see the current config, use the
     add('--override-build-tool-check', action='store_true', default=False,
         help='use to override failure due to using differnt build tools on the same workspace.')
 
-    # Deprecated args now handled by main catkin command
-    add('--no-color', action='store_true', help=argparse.SUPPRESS)
-    add('--force-color', action='store_true', help=argparse.SUPPRESS)
+    # Introspection
+    introspection_group = parser.add_argument_group('Introspection', 'Build environment analysis')
+    add = introspection_group.add_argument
+    add('--dry-run', '-n', action='store_true', default=False,
+        help='List the packages which will be built with the given arguments without building them.')
+    add('--get-env', dest='get_env', metavar='PKGNAME', nargs=1,
+        help='Print the environment in which PKGNAME is built to stdout.')
 
     # Experimental args
     add('--mem-limit', default=None, help=argparse.SUPPRESS)
-
     # Advanced args
     add('--develdebug', metavar='LEVEL', default=None, help=argparse.SUPPRESS)
 
@@ -348,7 +350,7 @@ def main(opts):
     if opts.dry_run:
         # TODO: Add unbuilt
         dry_run(ctx, opts.packages, opts.no_deps, opts.start_with)
-        return
+        return 0
 
     # Print the build environment for a given package and leave the filesystem untouched
     if opts.get_env:
@@ -394,6 +396,9 @@ def main(opts):
     # Set VERBOSE environment variable
     if opts.verbose:
         os.environ['VERBOSE'] = '1'
+
+    if opts.install_only_this_time:
+        ctx.install = opts.install_only_this_time  # override
 
     return build_isolated_workspace(
         ctx,
