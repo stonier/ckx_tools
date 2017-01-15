@@ -16,11 +16,20 @@ Implementation of the 'ckx rosdoc' verb.
 ##############################################################################
 
 import os
+import multiprocessing
+
 import subprocess
+import traceback
+
+try:
+    from queue import Queue # Python3
+except ImportError:
+    from Queue import Queue # Python2
 
 import catkin_pkg.packages as catkin_packages
 import catkin_tools.argument_parsing as argument_parsing
 import catkin_tools.common as common
+import catkin_tools.execution.job_server as job_server
 import catkin_tools.metadata as metadata
 
 from catkin_tools.context import Context
@@ -53,6 +62,7 @@ def prepare_arguments(parser):
     argument_parsing.add_context_args(parser) # workspace / profile args
     add = parser.add_argument
     add('packages', nargs='*', help="workspace packages to doc, if none are given, then all are generated")
+    add('--verbose', '-v', action='store_true', default=False, help='Print output from doc generators in their full glory.')
     return parser
 
 
@@ -76,6 +86,12 @@ def main(opts):
     if not os.path.exists(context.doc_space_abs):
         os.mkdir(context.doc_space_abs)
 
+    # Initialize job server
+    job_server.initialize(
+        max_jobs=None,  # let the job server decide
+        max_load=None,
+        gnu_make_enabled=False)
+
     # List of packages, curtail if restricted list is specified
     packages = catkin_packages.find_packages(context.source_space_abs, exclude_subspaces=True)
     if opts.packages:
@@ -84,19 +100,54 @@ def main(opts):
     # List up packages with its absolute path
     packages_by_name = {p.name: os.path.join(context.source_space_abs, path) for path, p in packages.iteritems()}
 
-    doc_output = {}
+    # doc_output = {}
+    stages = []
     print('\nGenerating documents in {0}\n'.format(context.doc_space_abs))
     for name, path in packages_by_name.items():
         print(' - {0}'.format(name))
-        output = generate_doc(name, path, context.doc_space_abs)
-        doc_output[name] = output
+        stages.append(generate_doc_stage(name, path, context.doc_space_abs, context.workspace))
+        # output = generate_doc(name, path, context.doc_space_abs)
+        # doc_output[name] = output
+    job = Job(
+        jid="rosdoc",  # unique job identifier
+        deps=[],
+        env_loader=load_env,  # get_env_loader(package, context),
+        stages=stages)
+    event_queue = Queue()
+    status_thread = ConsoleStatusController(
+        'rosdoc',
+        job_labels=['rosdoc', 'lite'],
+        jobs=[job],
+        max_toplevel_jobs=multiprocessing.cpu_count(),
+        available_jobs=[],  # [pkg.name for _, pkg in context.packages],
+        whitelisted_jobs= [],
+        blacklisted_jobs=[],
+        event_queue=event_queue,
+        show_buffered_stdout=opts.verbose,
+    )
+    status_thread.start()
+    # Block while running N jobs asynchronously
+    try:
+        unused_all_succeeded = run_until_complete(execute_jobs(
+            'rosdoc',
+            jobs=[job],
+            locks={},
+            event_queue=event_queue,
+            log_path=context.log_space_abs,
+            max_toplevel_jobs=multiprocessing.cpu_count()
+            ))
+    except Exception:
+        status_thread.keep_running = False
+        status_thread.join(1.0)
+        common.wide_log(str(traceback.format_exc()))
+    status_thread.join(1.0)
 
     generates_index_page(context.doc_space_abs, packages_by_name.keys())
 
-    print('\nDocument generation result. 0 may mean error. But it is fine most of time\n')
-    for name, err in doc_output.items():
-        print(" - {0} : {1}".format(name, str(err)))
-    print("")
+#     print('\nDocument generation result. 0 may mean error. But it is fine most of time\n')
+#     for name, err in doc_output.items():
+#         print(" - {0} : {1}".format(name, str(err)))
+#     print("")
     return 0
 
 ##############################################################################
@@ -111,6 +162,16 @@ def generate_doc(name, pkg_path, doc_path):
     args = [DOC_PROGRAM, '-o', document_path, pkg_path]
     output = subprocess.call(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     return output
+
+def generate_doc_stage(name, pkg_path, doc_path, workspace_path):
+    document_path = doc_path + '/' + name
+    cmd = [DOC_PROGRAM, '-o', document_path, pkg_path]
+    return CommandStage(
+        label=name,
+        cmd=cmd,
+        cwd=workspace_path,
+        occupy_job=True
+        )
 
 
 def output(fd, html):
@@ -132,3 +193,14 @@ def generates_index_page(doc_path, pkg_names):
 
     output(fd, templates.html_footer)
     os.close(fd)
+
+def load_env(base_env):
+    """
+    @todo need a better environment than this so it can actually find
+    rosdoc_lite without having to pre-load the environment from outside.
+
+    :param base_env: usually this is just os.environ as is
+    """
+    return base_env
+
+
