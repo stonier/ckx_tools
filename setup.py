@@ -25,7 +25,7 @@ if sys.version_info[0] == 2 and sys.version_info[1] <= 6:
 this_dir = os.path.abspath(os.path.dirname(__file__))
 osx_resources_path = os.path.join(
     this_dir,
-    'catkin_tools',
+    'ckx_tools',
     'notifications',
     'resources',
     'osx',
@@ -33,7 +33,7 @@ osx_resources_path = os.path.join(
 osx_notification_resources = [os.path.join(dp, f)
                               for dp, dn, fn in os.walk(osx_resources_path)
                               for f in fn]
-src_path = os.path.join(this_dir, 'catkin_tools')
+src_path = os.path.join(this_dir, 'ckx_tools')
 osx_notification_resources = [os.path.relpath(x, src_path)
                               for x in osx_notification_resources]
 
@@ -109,11 +109,11 @@ userbase = site.getuserbase() if opts.user else None
 prefix = userbase or opts.prefix or sys.prefix
 
 setup(
-    name='catkin_tools',
+    name='ckx_tools',
     version='0.4.3',
-    packages=find_packages(exclude=['tests', 'docs']),
+    packages=find_packages(exclude=['tests*', 'docs*']),  # ['ckx_tools'],  # find_packages(exclude=['tests', 'docs']), <-- broken, it picks up sub-packages, e.g. tests.unit
     package_data={
-        'catkin_tools': [
+        'ckx_tools': [
             'notifications/resources/linux/catkin_icon.png',
             'notifications/resources/linux/catkin_icon_red.png',
             'verbs/catkin_config/resources/cmake/*',
@@ -131,11 +131,11 @@ setup(
     },
     data_files=get_data_files(prefix),
     install_requires=install_requires,
-    author='William Woodall',
-    author_email='william@osrfoundation.org',
-    maintainer='William Woodall',
-    maintainer_email='william@osrfoundation.org',
-    url='http://catkin-tools.readthedocs.org/',
+    author='Daniel Stonier',
+    author_email='d.stonier@gmail.com',
+    maintainer='Daniel Stonier',
+    maintainer_email='d.stonier@gmail.com',
+    url='http://ckx-tools.readthedocs.org/',
     keywords=['catkin'],
     classifiers=[
         'Environment :: Console',
@@ -143,30 +143,30 @@ setup(
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python',
     ],
-    description="Command line tools for working with catkin.",
+    description="'X' tools for working with catkin.",
     long_description="Provides command line tools for working with catkin.",
     license='Apache 2.0',
     test_suite='tests',
     entry_points={
         'console_scripts': [
-            'catkin = catkin_tools.commands.catkin:main',
+            'ckx = ckx_tools.commands.catkin:main',
         ],
-        'catkin_tools.commands.catkin.verbs': [
-            'build = catkin_tools.verbs.catkin_build:description',
-            'clean = catkin_tools.verbs.catkin_clean:description',
-            'config = catkin_tools.verbs.catkin_config:description',
-            'create = catkin_tools.verbs.catkin_create:description',
-            'env = catkin_tools.verbs.catkin_env:description',
-            'list = catkin_tools.verbs.catkin_list:description',
-            'locate = catkin_tools.verbs.catkin_locate:description',
-            'profile = catkin_tools.verbs.catkin_profile:description',
-            'rosdep = catkin_tools.verbs.catkin_rosdep:description',
-            'rosdoc = catkin_tools.verbs.catkin_rosdoc:description',
-            'ws = catkin_tools.verbs.catkin_ws:description',
+        'ckx_tools.commands.catkin.verbs': [
+            'build = ckx_tools.verbs.ckx_build:description',
+            'clean = ckx_tools.verbs.ckx_clean:description',
+            'config = ckx_tools.verbs.ckx_config:description',
+            'create = ckx_tools.verbs.ckx_create:description',
+            'env = ckx_tools.verbs.ckx_env:description',
+            'list = ckx_tools.verbs.ckx_list:description',
+            'locate = ckx_tools.verbs.ckx_locate:description',
+            'profile = ckx_tools.verbs.ckx_profile:description',
+            'rosdep = ckx_tools.verbs.ckx_rosdep:description',
+            'rosdoc = ckx_tools.verbs.ckx_rosdoc:description',
+            'ws = ckx_tools.verbs.ckx_ws:description',
         ],
-        'catkin_tools.jobs': [
-            'catkin = catkin_tools.jobs.catkin:description',
-            'cmake = catkin_tools.jobs.cmake:description',
+        'ckx_tools.jobs': [
+            'catkin = ckx_tools.jobs.catkin:description',
+            'cmake = ckx_tools.jobs.cmake:description',
         ],
     },
     cmdclass={'install': PermissiveInstall},
