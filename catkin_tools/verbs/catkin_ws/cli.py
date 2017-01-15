@@ -73,7 +73,7 @@ Configuration:\n  \
 def prepare_arguments(parser):
     default_track = common.get_default_track()
 
-    parser.description = help_string()
+    parser.epilog = help_string()
     add = parser.add_argument
     add('dir', nargs='?', default=os.getcwd(), help='directory to use for the workspace [cwd]')
     add('--track', action='store', default=default_track, help='retrieve rosinstalls relevant to this track %s [%s]' % (common.VALID_TRACKS, default_track))

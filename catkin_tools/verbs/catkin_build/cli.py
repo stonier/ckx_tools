@@ -258,17 +258,12 @@ def main(opts):
     if opts.no_deps and not opts.packages and not opts.unbuilt:
         sys.exit(clr("[build] @!@{rf}Error:@| With --no-deps, you must specify packages to build."))
 
+    # Are we in a parallel build profile? If so, prefer that over the active one
     if not opts.profile:
-        enclosing_workspace = find_enclosing_workspace(getcwd())
-        expected_workspace = find_enclosing_workspace(opts.workspace or getcwd())
-        if enclosing_workspace and enclosing_workspace == expected_workspace:
-            cwd = os.getcwdu()
-            parent_path = os.path.abspath(os.path.join(cwd, os.pardir))
-            candidate_profile_name = os.path.basename(cwd)
-            if parent_path == enclosing_workspace and candidate_profile_name in metadata.get_profile_names(enclosing_workspace):
-                active_profile = metadata.get_active_profile(enclosing_workspace)
-                print(clr("@!@{yf}\nWarning: overriding active profile with command line argument [%s->%s]\n@|" % (active_profile, candidate_profile_name)))
-                opts.profile = candidate_profile_name
+        enclosing_profile = metadata.find_enclosing_profile(os.getcwdu(), opts.workspace)
+        if enclosing_profile:
+            print(clr("@!\nInfo: in a parallel build folder, prefer this profile [%s]\n@|" % enclosing_profile))
+            opts.profile = enclosing_profile
 
     # Load the context
     ctx = Context.load(opts.workspace, opts.profile, opts, append=True)
