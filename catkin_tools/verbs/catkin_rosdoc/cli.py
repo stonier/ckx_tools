@@ -24,6 +24,11 @@ import catkin_tools.common as common
 import catkin_tools.metadata as metadata
 
 from catkin_tools.context import Context
+from catkin_tools.execution.executor import execute_jobs
+from catkin_tools.execution.executor import run_until_complete
+from catkin_tools.execution.jobs import Job
+from catkin_tools.execution.stages import CommandStage
+from catkin_tools.execution.controllers import ConsoleStatusController
 from catkin_tools.terminal_color import ColorMapper
 from catkin_tools.utils import which
 
@@ -38,13 +43,9 @@ clr = color_mapper.clr
 
 def help_string():
     instructions = clr("@!Examples@|\n\n  \
-@{gf}Minimal Use Cases@|\n\n  \
-  @{cf}ckx rosdep --install@| : @{yf}install rosdeps for the active profile in the enclosing workspace@|\n  \
-  @{cf}ckx rosdep --list@|    : @{yf}list all rosdep keys for the active profile in the enclosing workspace@|\n\n  \
-@{gf}Targeted Profile or Workspace@|\n\n  \
-  @{cf}ckx rosdep --workspace ~/foo_ws --install@| : @{yf}install rosdeps for the active profile in the specified workspace@|\n  \
-  @{cf}ckx rosdep --profile native --install@| : @{yf}install rosdeps for the specified profile in the enclosing workspace@|\n  \
- ")
+  @{cf}ckx rosdoc@| : @{yf}doc all packages in the source workspace@|\n  \
+  @{cf}ckx rosdoc ecl_build ecl_time_lite@| : @{yf}doc only the listed packages@|\n\n  \
+")
     return instructions
 
 def prepare_arguments(parser):
@@ -95,6 +96,7 @@ def main(opts):
     print('\nDocument generation result. 0 may mean error. But it is fine most of time\n')
     for name, err in doc_output.items():
         print(" - {0} : {1}".format(name, str(err)))
+    print("")
     return 0
 
 ##############################################################################
@@ -125,7 +127,7 @@ def generates_index_page(doc_path, pkg_names):
     output(fd, templates.html_header)
 
     for pkg in pkg_names:
-        link_html = '  <p><a href="' + pkg + '/html/index.html">' + pkg + '</a></p>'
+        link_html = '  <a href="' + pkg + '/html/index.html">' + pkg + '</a><br/>'
         output(fd, [link_html])
 
     output(fd, templates.html_footer)
