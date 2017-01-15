@@ -50,6 +50,7 @@ class Context(object):
     This context can be locked, so that changing the members is prevented.
     """
 
+    DEFAULT_DOC_SPACE = 'docs'
     DEFAULT_LOG_SPACE = 'logs'
     DEFAULT_SOURCE_SPACE = 'src'
     DEFAULT_BUILD_SPACE = 'build'
@@ -203,6 +204,7 @@ class Context(object):
         profile=None,
         underlays=None,
         source_space=None,
+        doc_space=None,
         log_space=None,
         build_space=None,
         devel_space=None,
@@ -232,6 +234,8 @@ class Context(object):
         :type underlays: str
         :param source_space: relative location of source space, defaults to '<workspace>/src'
         :type source_space: str
+        :param doc_space: relative location of doc space, defaults to '<workspace>/docs'
+        :type doc_space: str
         :param log_space: relative location of log space, defaults to '<workspace>/logs'
         :type log_space: str
         :param build_space: relativetarget location of build space, defaults to '<workspace>/build'
@@ -287,6 +291,7 @@ class Context(object):
         # might be to situate these on the current directory instead, just like the regular parallel build flow
         self.build_root = self.profile if self.profile != metadata.DEFAULT_PROFILE_NAME else ''
         self.log_space = os.path.join(self.build_root, Context.DEFAULT_LOG_SPACE) if log_space is None else log_space
+        self.doc_space = os.path.join(self.build_root, Context.DEFAULT_DOC_SPACE) if doc_space is None else doc_space
         self.build_space = os.path.join(self.build_root, Context.DEFAULT_BUILD_SPACE) if build_space is None else build_space
         self.devel_space = os.path.join(self.build_root, Context.DEFAULT_DEVEL_SPACE) if devel_space is None else devel_space
         self.install_space = os.path.join(self.build_root, Context.DEFAULT_INSTALL_SPACE) if install_space is None else install_space
@@ -441,6 +446,7 @@ class Context(object):
             ],
             [
                 clr("@{cf}Source Space:@|      {source_missing} @{yf}{_Context__source_space_abs}@|"),
+                clr("@{cf}Doc Space:@|         {log_missing} @{yf}{_Context__doc_space_abs}@|"),
                 clr("@{cf}Log Space:@|         {log_missing} @{yf}{_Context__log_space_abs}@|"),
                 clr("@{cf}Build Space:@|       {build_missing} @{yf}{_Context__build_space_abs}@|"),
                 clr("@{cf}Devel Space:@|       {devel_missing} @{yf}{_Context__devel_space_abs}@|"),
@@ -508,6 +514,7 @@ class Context(object):
             'make_args': ' '.join(self.__make_args + self.__jobs_args or ['None']),
             'catkin_make_args': ', '.join(self.__catkin_make_args or ['None']),
             'source_missing': existence_str(self.source_space_abs),
+            'doc_missing': existence_str(self.doc_space_abs),
             'log_missing': existence_str(self.log_space_abs),
             'build_missing': existence_str(self.build_space_abs),
             'devel_missing': existence_str(self.devel_space_abs),
@@ -598,6 +605,21 @@ class Context(object):
     def initialized(self):
         """Check if this context is initialized."""
         return self.workspace == find_enclosing_workspace(self.workspace)
+
+    @property
+    def doc_space_abs(self):
+        return self.__doc_space_abs
+
+    @property
+    def doc_space(self):
+        return self.__doc_space
+
+    @doc_space.setter
+    def doc_space(self, value):
+        if self.__locked:
+            raise RuntimeError("Setting of context members is not allowed while locked.")
+        self.__doc_space = value
+        self.__doc_space_abs = os.path.join(self.__workspace, value)
 
     @property
     def log_space_abs(self):

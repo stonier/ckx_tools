@@ -161,6 +161,7 @@ setup(
             'locate = catkin_tools.verbs.catkin_locate:description',
             'profile = catkin_tools.verbs.catkin_profile:description',
             'rosdep = catkin_tools.verbs.catkin_rosdep:description',
+            'rosdoc = catkin_tools.verbs.catkin_rosdoc:description',
             'ws = catkin_tools.verbs.catkin_ws:description',
         ],
         'catkin_tools.jobs': [

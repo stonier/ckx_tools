@@ -115,7 +115,6 @@ the --save-config argument. To see the current config, use the
     add = common_group.add_argument
     add('--verbose', '-v', action='store_true', default=False,
         help='Print output from commands in ordered blocks once the command finishes.')
-    add('--install-rosdeps', action='store_true', help='Install all rosdeps for the sources using the underlays as a reference [false]')
     add('--force-cmake', action='store_true', default=None,
         help='Runs cmake explicitly for each catkin package.')
     add('--pre-clean', action='store_true', default=None,
