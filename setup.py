@@ -15,6 +15,8 @@ install_requires = [
     'setuptools',
     'PyYAML',
     'osrf-pycommon > 0.1.1',
+    'rospkg',
+    'wstool'
 ]
 if sys.version_info[0] == 2 and sys.version_info[1] <= 6:
     install_requires.append('argparse')
@@ -114,6 +116,15 @@ setup(
         'catkin_tools': [
             'notifications/resources/linux/catkin_icon.png',
             'notifications/resources/linux/catkin_icon_red.png',
+            'verbs/catkin_config/resources/cmake/*',
+            'verbs/catkin_config/resources/templates/*',
+            'verbs/catkin_config/resources/toolchains/buildroot/*',
+            'verbs/catkin_config/resources/toolchains/ubuntu/*',
+            'verbs/catkin_config/resources/toolchains/code_sourcery/*',
+            'verbs/catkin_config/resources/toolchains/nexell/*',
+            'verbs/catkin_config/resources/platforms/generic/*',
+            'verbs/catkin_config/resources/platforms/arm/*',
+            'verbs/catkin_config/resources/platforms/intel/*',
             'verbs/catkin_shell_verbs.bash',
             'docs/examples',
         ] + osx_notification_resources
@@ -146,10 +157,12 @@ setup(
             'config = catkin_tools.verbs.catkin_config:description',
             'create = catkin_tools.verbs.catkin_create:description',
             'env = catkin_tools.verbs.catkin_env:description',
-            'init = catkin_tools.verbs.catkin_init:description',
             'list = catkin_tools.verbs.catkin_list:description',
             'locate = catkin_tools.verbs.catkin_locate:description',
             'profile = catkin_tools.verbs.catkin_profile:description',
+            'rosdep = catkin_tools.verbs.catkin_rosdep:description',
+            'rosdoc = catkin_tools.verbs.catkin_rosdoc:description',
+            'ws = catkin_tools.verbs.catkin_ws:description',
         ],
         'catkin_tools.jobs': [
             'catkin = catkin_tools.jobs.catkin:description',

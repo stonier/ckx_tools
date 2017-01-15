@@ -20,6 +20,7 @@ import os
 import re
 import sys
 
+from . import common
 from . import metadata
 
 from .common import getcwd
@@ -49,6 +50,7 @@ class Context(object):
     This context can be locked, so that changing the members is prevented.
     """
 
+    DEFAULT_DOC_SPACE = 'docs'
     DEFAULT_LOG_SPACE = 'logs'
     DEFAULT_SOURCE_SPACE = 'src'
     DEFAULT_BUILD_SPACE = 'build'
@@ -56,7 +58,7 @@ class Context(object):
     DEFAULT_INSTALL_SPACE = 'install'
 
     STORED_KEYS = [
-        'extend_path',
+        'underlays',
         'source_space',
         'log_space',
         'build_space',
@@ -73,6 +75,8 @@ class Context(object):
         'catkin_make_args',
         'whitelist',
         'blacklist',
+        'platform',
+        'toolchain'
     ]
 
     KEYS = STORED_KEYS + [
@@ -151,6 +155,12 @@ class Context(object):
             config_metadata = metadata.get_metadata(workspace, profile, 'config')
             context_args.update(config_metadata)
 
+        # has not been stored before, take the chance to do some initialisations
+        if not config_metadata:
+            # if --no-underlays is set, then opts_vars['underlays'] == '' is True
+            if 'underlays' not in opts_vars or opts_vars['underlays'] is None:
+                opts_vars['underlays'] = common.get_default_underlay()
+
         # User-supplied args are used to update stored args
         # Only update context args with given opts which are not none
         for (k, v) in opts_vars.items():
@@ -192,8 +202,9 @@ class Context(object):
         self,
         workspace=None,
         profile=None,
-        extend_path=None,
+        underlays=None,
         source_space=None,
+        doc_space=None,
         log_space=None,
         build_space=None,
         devel_space=None,
@@ -209,6 +220,8 @@ class Context(object):
         catkin_make_args=None,
         whitelist=None,
         blacklist=None,
+        platform=None,
+        toolchain=None,
         **kwargs
     ):
         """Creates a new Context object, optionally initializing with parameters
@@ -217,10 +230,12 @@ class Context(object):
         :type workspace: str
         :param profile: profile name, defaults to the default profile
         :type profile: str
-        :param extend_path: catkin result-space to extend
-        :type extend_path: str
+        :param underlays: semi-colon separated list of catkin workspace underlays
+        :type underlays: str
         :param source_space: relative location of source space, defaults to '<workspace>/src'
         :type source_space: str
+        :param doc_space: relative location of doc space, defaults to '<workspace>/docs'
+        :type doc_space: str
         :param log_space: relative location of log space, defaults to '<workspace>/logs'
         :type log_space: str
         :param build_space: relativetarget location of build space, defaults to '<workspace>/build'
@@ -251,6 +266,10 @@ class Context(object):
         :type whitelist: list
         :param blacklist: a list of packages to ignore by default
         :type blacklist: list
+        :param platform: name of a platform specific configuration from the platform library
+        :type platform: str
+        :param toolchain: name of a toolchain from the toolchain library
+        :type toolchain: str
         :raises: ValueError if workspace or source space does not exist
         """
         self.__locked = False
@@ -263,23 +282,28 @@ class Context(object):
         # Handle *space assignment and defaults
         self.workspace = workspace
 
-        self.extend_path = extend_path if extend_path else None
+        self.underlays = underlays if underlays else None
 
         self.profile = profile
 
         self.source_space = Context.DEFAULT_SOURCE_SPACE if source_space is None else source_space
         # create a subdirectory for the profile if it is not the default - an alternative option
         # might be to situate these on the current directory instead, just like the regular parallel build flow
-        rel = self.profile if self.profile != metadata.DEFAULT_PROFILE_NAME else ''
-        self.log_space = os.path.join(rel, Context.DEFAULT_LOG_SPACE) if log_space is None else log_space
-        self.build_space = os.path.join(rel, Context.DEFAULT_BUILD_SPACE) if build_space is None else build_space
-        self.devel_space = os.path.join(rel, Context.DEFAULT_DEVEL_SPACE) if devel_space is None else devel_space
-        self.install_space = os.path.join(rel, Context.DEFAULT_INSTALL_SPACE) if install_space is None else install_space
+        self.build_root = self.profile if self.profile != metadata.DEFAULT_PROFILE_NAME else ''
+        self.log_space = os.path.join(self.build_root, Context.DEFAULT_LOG_SPACE) if log_space is None else log_space
+        self.doc_space = os.path.join(self.build_root, Context.DEFAULT_DOC_SPACE) if doc_space is None else doc_space
+        self.build_space = os.path.join(self.build_root, Context.DEFAULT_BUILD_SPACE) if build_space is None else build_space
+        self.devel_space = os.path.join(self.build_root, Context.DEFAULT_DEVEL_SPACE) if devel_space is None else devel_space
+        self.install_space = os.path.join(self.build_root, Context.DEFAULT_INSTALL_SPACE) if install_space is None else install_space
         self.destdir = os.environ['DESTDIR'] if 'DESTDIR' in os.environ else None
 
         # Handle package whitelist/blacklist
         self.whitelist = whitelist or []
         self.blacklist = blacklist or []
+
+        # Cross compiling helpers
+        self.platform = platform
+        self.toolchain = toolchain
 
         # Handle build options
         self.devel_layout = devel_layout if devel_layout else 'linked'
@@ -307,7 +331,6 @@ class Context(object):
         self.cmake_prefix_path = None
 
     def load_env(self):
-
         # Check for CMAKE_PREFIX_PATH in manual cmake args
         self.manual_cmake_prefix_path = ''
         for cmake_arg in self.cmake_args:
@@ -329,13 +352,21 @@ class Context(object):
 
         # Either load an explicit environment or get it from the current environment
         self.env_cmake_prefix_path = ''
-        if self.extend_path:
-            extended_env = get_resultspace_environment(self.extend_path, quiet=False)
-            self.env_cmake_prefix_path = extended_env.get('CMAKE_PREFIX_PATH', '')
+        underlays_unique = set()
+        extended_env = {}
+        if self.underlays:
+            for underlay_path in self.underlays.split(";"):
+                try:
+                    extended_env = get_resultspace_environment(underlay_path, quiet=False)
+                    underlay_cmake_prefix_path = set(extended_env.get('CMAKE_PREFIX_PATH', '').split(';'))
+                    underlays_unique = underlays_unique.union(underlay_cmake_prefix_path)
+                except IOError as e:
+                    # quietly continue - cmake is quite ok if the CMAKE_PREFIX_PATH is overpopulated
+                    print(clr("@!@{yf}Warning:@| %s" % str(e)))
+            self.env_cmake_prefix_path = ';'.join(underlays_unique)
             if not self.env_cmake_prefix_path:
-                print(clr("@!@{rf}Error:@| Could not load environment from workspace: '%s', "
-                          "target environment (env.sh) does not provide 'CMAKE_PREFIX_PATH'" % self.extend_path))
-                print(extended_env)
+                print(clr("@!@{rf}Error:@| Could not load any environment from workspace underlays: '%s', "
+                          % self.underlays))
                 sys.exit(1)
         else:
             # Get the current CMAKE_PREFIX_PATH
@@ -351,31 +382,27 @@ class Context(object):
 
         # Add warning for empty extend path
         if (self.devel_layout == 'linked' and
-            (self.extend_path is None and
+            (self.underlays is None and
              not self.cached_cmake_prefix_path and
              not self.env_cmake_prefix_path)):
             self.warnings += [clr(
-                "Your workspace is not extending any other result space, but "
+                "Your workspace is not using any underlays, but "
                 "it is set to use a `linked` devel space layout. This "
                 "requires the `catkin` CMake package in your source space "
                 "in order to be built.")]
 
-        # Add warnings based on conflicing CMAKE_PREFIX_PATH
-        elif self.cached_cmake_prefix_path and self.extend_path:
-            ep_not_in_lcpp = any([self.extend_path in p for p in self.cached_cmake_prefix_path.split(':')])
-            if not ep_not_in_lcpp:
+        # Add warnings based on conflicting CMAKE_PREFIX_PATH
+        elif self.cached_cmake_prefix_path and self.underlays:
+            up_in_lcpp = True
+            for underlay_path in self.underlays:
+                up_in_lcpp = up_in_lcpp and any([underlay_path in p for p in self.cached_cmake_prefix_path.split(';')])
+            if not up_in_lcpp:
                 self.warnings += [clr(
-                    "Your workspace is configured to explicitly extend a "
-                    "workspace which yields a CMAKE_PREFIX_PATH which is "
-                    "different from the cached CMAKE_PREFIX_PATH used last time "
-                    "this workspace was built.\\n\\n"
-                    "If you want to use a different CMAKE_PREFIX_PATH you "
-                    "should call @{yf}`catkin clean`@| to remove all "
-                    "references to the previous CMAKE_PREFIX_PATH.\\n\\n"
-                    "@{cf}Cached CMAKE_PREFIX_PATH:@|\\n\\t@{yf}%s@|\\n"
-                    "@{cf}Other workspace to extend:@|\\n\\t@{yf}{_Context__extend_path}@|\\n"
-                    "@{cf}Other workspace's CMAKE_PREFIX_PATH:@|\\n\\t@{yf}%s@|"
-                    % (self.cached_cmake_prefix_path, self.env_cmake_prefix_path))]
+                    "One or more of your underlays is not contributing to the "
+                    "cached CMAKE_PREFIX_PATH. Is it missing or not built yet?\\n\\n"
+                    "@{cf}Underlays                 :@{yf}{_Context__underlays}@|\\n"
+                    "@{cf}Cached CMAKE_PREFIX_PATH: @|@{yf}%s@|"
+                    % (self.cached_cmake_prefix_path))]
 
         elif self.env_cmake_prefix_path and\
                 self.cached_cmake_prefix_path and\
@@ -414,11 +441,12 @@ class Context(object):
         summary = [
             [
                 clr("@{cf}Profile:@|                     @{yf}{profile}@|"),
-                clr("@{cf}Extending:@|        {extend_mode} @{yf}{extend}@|"),
+                clr("@{cf}Underlays:@|        {underlay_mode} @{yf}{underlays}@|"),
                 clr("@{cf}Workspace:@|                   @{yf}{_Context__workspace}@|"),
             ],
             [
                 clr("@{cf}Source Space:@|      {source_missing} @{yf}{_Context__source_space_abs}@|"),
+                clr("@{cf}Doc Space:@|         {log_missing} @{yf}{_Context__doc_space_abs}@|"),
                 clr("@{cf}Log Space:@|         {log_missing} @{yf}{_Context__log_space_abs}@|"),
                 clr("@{cf}Build Space:@|       {build_missing} @{yf}{_Context__build_space_abs}@|"),
                 clr("@{cf}Devel Space:@|       {devel_missing} @{yf}{_Context__devel_space_abs}@|"),
@@ -439,24 +467,32 @@ class Context(object):
             [
                 clr("@{cf}Whitelisted Packages:@|        @{yf}{whitelisted_packages}@|"),
                 clr("@{cf}Blacklisted Packages:@|        @{yf}{blacklisted_packages}@|"),
+            ],
+            [
+                clr("@{cf}Platform:@|                    @{yf}{_Context__platform}@|"),
+                clr("@{cf}Toolchain:@|                   @{yf}{_Context__toolchain}@|"),
             ]
         ]
 
         # Construct string for extend value
-        if self.extend_path:
-            extend_value = self.extend_path
-            extend_mode = clr('@{gf}[explicit]@|')
+        if self.underlays:
+            underlay_value = self.underlays
+            if self.cached_cmake_prefix_path:
+                if self.cached_cmake_prefix_path != self.underlays:
+                    underlay_value += '\n' + ' '*20
+                    underlay_value += clr('@{rf}[cached] @|@{yf}%s@|' % self.cached_cmake_prefix_path)
+            underlay_mode = clr('@{gf}[explicit]@|')
         elif self.cached_cmake_prefix_path:
-            extend_value = self.cmake_prefix_path
-            extend_mode = clr('  @{gf}[cached]@|')
+            underlay_value = self.cmake_prefix_path
+            underlay_mode = clr('  @{gf}[cached]@|')
         elif (self.env_cmake_prefix_path and
                 self.env_cmake_prefix_path != self.devel_space_abs and
                 self.env_cmake_prefix_path != self.install_space_abs):
-            extend_value = self.cmake_prefix_path
-            extend_mode = clr('     @{gf}[env]@|')
+            underlay_value = self.cmake_prefix_path
+            underlay_mode = clr('     @{gf}[env]@|')
         else:
-            extend_value = 'None'
-            extend_mode = clr('          ')
+            underlay_value = 'None'
+            underlay_mode = clr('          ')
 
         def existence_str(path, used=True):
             if used:
@@ -470,14 +506,15 @@ class Context(object):
 
         subs = {
             'profile': self.profile,
-            'extend_mode': extend_mode,
-            'extend': extend_value,
+            'underlay_mode': underlay_mode,
+            'underlays': underlay_value,
             'install_layout': install_layout,
             'cmake_prefix_path': (self.cmake_prefix_path or ['Empty']),
             'cmake_args': ' '.join(self.__cmake_args or ['None']),
             'make_args': ' '.join(self.__make_args + self.__jobs_args or ['None']),
             'catkin_make_args': ', '.join(self.__catkin_make_args or ['None']),
             'source_missing': existence_str(self.source_space_abs),
+            'doc_missing': existence_str(self.doc_space_abs),
             'log_missing': existence_str(self.log_space_abs),
             'build_missing': existence_str(self.build_space_abs),
             'devel_missing': existence_str(self.devel_space_abs),
@@ -531,19 +568,20 @@ class Context(object):
         self.__workspace = os.path.abspath(value)
 
     @property
-    def extend_path(self):
-        return self.__extend_path
+    def underlays(self):
+        return self.__underlays
 
-    @extend_path.setter
-    def extend_path(self, value):
-        if value is not None:
-            if not os.path.isabs(value):
-                value = os.path.join(self.workspace, value)
-            # remove double or trailing slashes
-            value = os.path.normpath(value)
-            if not os.path.exists(value):
-                raise ValueError("Resultspace path '{0}' does not exist.".format(value))
-        self.__extend_path = value
+    @underlays.setter
+    def underlays(self, value):
+#         if value is not None:
+#             for v in value.split(';'):
+#                 if not os.path.isabs(v):
+#                     v = os.path.join(self.workspace, v)
+#                 # remove double or trailing slashes
+#                 v = os.path.normpath(v)
+#                 if not os.path.exists(v):
+#                     raise ValueError("Resultspace path '{0}' does not exist.".format(v))
+        self.__underlays = value
 
     @property
     def source_space_abs(self):
@@ -567,6 +605,21 @@ class Context(object):
     def initialized(self):
         """Check if this context is initialized."""
         return self.workspace == find_enclosing_workspace(self.workspace)
+
+    @property
+    def doc_space_abs(self):
+        return self.__doc_space_abs
+
+    @property
+    def doc_space(self):
+        return self.__doc_space
+
+    @doc_space.setter
+    def doc_space(self, value):
+        if self.__locked:
+            raise RuntimeError("Setting of context members is not allowed while locked.")
+        self.__doc_space = value
+        self.__doc_space_abs = os.path.join(self.__workspace, value)
 
     @property
     def log_space_abs(self):
@@ -597,6 +650,21 @@ class Context(object):
             raise RuntimeError("Setting of context members is not allowed while locked.")
         self.__build_space = value
         self.__build_space_abs = os.path.join(self.__workspace, value)
+
+    @property
+    def build_root_abs(self):
+        return self.__build_root_abs
+
+    @property
+    def build_root(self):
+        return self.__build_root
+
+    @build_root.setter
+    def build_root(self, value):
+        if self.__locked:
+            raise RuntimeError("Setting of context members is not allowed while locked.")
+        self.__build_root = value
+        self.__build_root_abs = os.path.join(self.__workspace, value) if value else self.__workspace
 
     @property
     def devel_space_abs(self):
@@ -769,6 +837,22 @@ class Context(object):
     @blacklist.setter
     def blacklist(self, value):
         self.__blacklist = value
+
+    @property
+    def platform(self):
+        return self.__platform
+
+    @platform.setter
+    def platform(self, value):
+        self.__platform = value
+
+    @property
+    def toolchain(self):
+        return self.__toolchain
+
+    @toolchain.setter
+    def toolchain(self, value):
+        self.__toolchain = value
 
     @property
     def private_devel_path(self):

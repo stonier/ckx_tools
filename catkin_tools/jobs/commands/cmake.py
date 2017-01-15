@@ -85,6 +85,10 @@ class CMakeIOBufferProtocol(IOBufferProtocol):
         super(CMakeIOBufferProtocol, self).on_stdout_received(colored)
 
     def on_stderr_received(self, data):
+        # older versions of cmake erroneously printed the cache file load on stderr, skip these
+        #    see https://gitlab.kitware.com/cmake/cmake/commit/6cc0f6b512d08caabf088d22f3f25432e6307b6a?view=parallel
+        if "loading initial cache file" in data:
+            return
         data_head, self.stderr_tail = split_to_last_line_break(self.stderr_tail + data)
         colored = self.color_lines(data_head)
         super(CMakeIOBufferProtocol, self).on_stderr_received(colored)

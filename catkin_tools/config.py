@@ -19,8 +19,6 @@ import yaml
 
 from .common import string_type
 
-catkin_config_path = os.path.join(os.path.expanduser('~'), '.config', 'catkin')
-
 builtin_verb_aliases_content = """\
 ### DO NOT EDIT, generated automatically and updated automatically by catkin_tools
 
@@ -38,8 +36,22 @@ test: build --verbose --make-args test --
 run_tests: build --verbose --catkin-make-args run_tests --
 """
 
+def home():
+    """
+    Get location of the configuration directory
 
-def initialize_verb_aliases(path=catkin_config_path):
+    @return: path to use use for the configuration directory
+    @rtype: str
+    """
+    home_dir = os.path.join(os.path.expanduser('~'), '.config', '.ckx_tools')
+    if not os.path.exists(home_dir):
+        if os.path.isfile(home_dir):
+            raise RuntimeError("the ckx tools home ({0}) exists but is a file.".format(home_dir))
+        os.makedirs(home_dir)
+    return home_dir
+
+
+def initialize_verb_aliases(path=home()):
     if not os.path.isdir(path):
         raise RuntimeError(
             "Cannot initialize verb aliases because catkin configuration path ('{0}') does not exist or is a file."
@@ -64,18 +76,12 @@ def initialize_verb_aliases(path=catkin_config_path):
             f.write(builtin_verb_aliases_content)
 
 
-def initialize_config(path=catkin_config_path):
-    # Assert that the config path exists, otherwise try to create it
-    if not os.path.isdir(path):
-        if os.path.isfile(path):
-            raise RuntimeError("The catkin config directory ('{0}') exists, but is a file."
-                               .format(path))
-        os.makedirs(path)
+def initialize_config(path=home()):
     # Initialize the verbs
     initialize_verb_aliases(path)
 
 
-def get_verb_aliases(path=catkin_config_path):
+def get_verb_aliases(path=home()):
     if not os.path.isdir(path):
         raise RuntimeError(
             "Cannot get verb aliases because the catkin config path ('{0}') does not exist or is a file."

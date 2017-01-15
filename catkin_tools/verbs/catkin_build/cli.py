@@ -46,6 +46,7 @@ from catkin_tools.common import format_env_dict
 
 from catkin_tools.context import Context
 
+import catkin_tools.metadata as metadata
 import catkin_tools.execution.job_server as job_server
 
 from catkin_tools.jobs.utils import get_env_loader
@@ -90,6 +91,10 @@ argparse._ArgumentGroup.__init__ = fixed__ArgumentGroup___init__
 # End Hack
 #
 
+##############################################################################
+# Entry Point API
+##############################################################################
+
 
 def prepare_arguments(parser):
     parser.description = """\
@@ -105,19 +110,33 @@ the --save-config argument. To see the current config, use the
 
     # Workspace / profile args
     add_context_args(parser)
-    # Sub-commands
-    add = parser.add_argument
-    add('--dry-run', '-n', action='store_true', default=False,
-        help='List the packages which will be built with the given arguments without building them.')
-    add('--get-env', dest='get_env', metavar='PKGNAME', nargs=1,
-        help='Print the environment in which PKGNAME is built to stdout.')
 
-    # What packages to build
-    pkg_group = parser.add_argument_group('Packages', 'Control which packages get built.')
-    add = pkg_group.add_argument
+    common_group = parser.add_argument_group('Common Options', 'Most frequently used options.')
+    add = common_group.add_argument
+    add('--verbose', '-v', action='store_true', default=False,
+        help='Print output from commands in ordered blocks once the command finishes.')
+    add('--force-cmake', action='store_true', default=None,
+        help='Runs cmake explicitly for each catkin package.')
+    add('--pre-clean', action='store_true', default=None,
+        help='Runs `make clean` before building each package.')
+    add('--install', action='store_true', dest='install_only_this_time', default=None,
+        help='Enable installation after the build has finished (overrides config settings)')
     add('packages', metavar='PKGNAME', nargs='*',
         help='Workspace packages to build, package dependencies are built as well unless --no-deps is used. '
              'If no packages are given, then all the packages are built.')
+    test_group = parser.add_mutually_exclusive_group()
+    add = test_group.add_argument
+    add('-t', '--tests', action='store_true', help='Make tests [false]')
+    add('-r', '--run-tests', action='store_true', help='Run tests (does not build them) [false]')
+
+    doc_group = parser.add_mutually_exclusive_group()
+    add = doc_group.add_argument
+    add('-d', '--doc', action='store_true', help='Generates the documents for packages in the workspace.')
+    add('--doc-only', action='store_true', help='Generates the documents for packages in the workspace. Does not build source')
+
+    # What packages to build
+    pkg_group = parser.add_argument_group('Advanced Package Control', 'Control which packages get built.')
+    add = pkg_group.add_argument
     add('--this', dest='build_this', action='store_true', default=False,
         help='Build the package containing the current working directory.')
     add('--no-deps', action='store_true', default=False,
@@ -137,26 +156,21 @@ the --save-config argument. To see the current config, use the
              'packages fail to build.')
 
     # Build options
-    build_group = parser.add_argument_group('Build', 'Control the build behavior.')
+    build_group = parser.add_argument_group('Advanced Build Options', 'Control the build behavior.')
     add = build_group.add_argument
-    add('--force-cmake', action='store_true', default=None,
-        help='Runs cmake explicitly for each catkin package.')
-    add('--pre-clean', action='store_true', default=None,
-        help='Runs `make clean` before building each package.')
+    add('--strip', action='store_true', help='Strips binaries, only valid with --install')
     add('--no-install-lock', action='store_true', default=None,
         help='Prevents serialization of the install steps, which is on by default to prevent file install collisions')
 
-    config_group = parser.add_argument_group('Config', 'Parameters for the underlying build system.')
+    config_group = parser.add_argument_group('Advanced Configuration', 'Parameters for the underlying build system.')
     add = config_group.add_argument
     add('--save-config', action='store_true', default=False,
         help='Save any configuration options in this section for the next build invocation.')
     add_cmake_and_make_and_catkin_make_args(config_group)
 
     # Behavior
-    behavior_group = parser.add_argument_group('Interface', 'The behavior of the command-line interface.')
+    behavior_group = parser.add_argument_group('Advanced Interface Options', 'The behavior of the command-line interface.')
     add = behavior_group.add_argument
-    add('--verbose', '-v', action='store_true', default=False,
-        help='Print output from commands in ordered blocks once the command finishes.')
     add('--interleave-output', '-i', action='store_true', default=False,
         help='Prevents ordering of command output when multiple commands are running at the same time.')
     add('--no-status', action='store_true', default=False,
@@ -168,13 +182,16 @@ the --save-config argument. To see the current config, use the
     add('--override-build-tool-check', action='store_true', default=False,
         help='use to override failure due to using differnt build tools on the same workspace.')
 
-    # Deprecated args now handled by main catkin command
-    add('--no-color', action='store_true', help=argparse.SUPPRESS)
-    add('--force-color', action='store_true', help=argparse.SUPPRESS)
+    # Introspection
+    introspection_group = parser.add_argument_group('Introspection', 'Build environment analysis')
+    add = introspection_group.add_argument
+    add('--dry-run', '-n', action='store_true', default=False,
+        help='List the packages which will be built with the given arguments without building them.')
+    add('--get-env', dest='get_env', metavar='PKGNAME', nargs=1,
+        help='Print the environment in which PKGNAME is built to stdout.')
 
     # Experimental args
     add('--mem-limit', default=None, help=argparse.SUPPRESS)
-
     # Advanced args
     add('--develdebug', metavar='LEVEL', default=None, help=argparse.SUPPRESS)
 
@@ -191,51 +208,6 @@ the --save-config argument. To see the current config, use the
         help='Suppresses system pop-up notification.')
 
     return parser
-
-
-def dry_run(context, packages, no_deps, start_with):
-    # Print Summary
-    log(context.summary())
-    # Get all the packages in the context source space
-    # Suppress warnings since this is a utility function
-    workspace_packages = find_packages(context.source_space_abs, exclude_subspaces=True, warnings=[])
-    # Find list of packages in the workspace
-    packages_to_be_built, packages_to_be_built_deps, all_packages = determine_packages_to_be_built(
-        packages, context, workspace_packages)
-    # Assert start_with package is in the workspace
-    verify_start_with_option(start_with, packages, all_packages, packages_to_be_built + packages_to_be_built_deps)
-    if not no_deps:
-        # Extend packages to be built to include their deps
-        packages_to_be_built.extend(packages_to_be_built_deps)
-        # Also resort
-        packages_to_be_built = topological_order_packages(dict(packages_to_be_built))
-    # Print packages
-    log("Packages to be built:")
-    max_name_len = str(max([len(pkg.name) for pth, pkg in packages_to_be_built]))
-    prefix = clr('@{pf}' + ('------ ' if start_with else '- ') + '@|')
-    for pkg_path, pkg in packages_to_be_built:
-        build_type = get_build_type(pkg)
-        if build_type == 'catkin' and 'metapackage' in [e.tagname for e in pkg.exports]:
-            build_type = 'metapackage'
-        if start_with and pkg.name == start_with:
-            start_with = None
-        log(clr("{prefix}@{cf}{name:<" + max_name_len + "}@| (@{yf}{build_type}@|)")
-            .format(prefix=clr('@!@{kf}(skip)@| ') if start_with else prefix, name=pkg.name, build_type=build_type))
-    log("Total packages: " + str(len(packages_to_be_built)))
-
-
-def print_build_env(context, package_name):
-    workspace_packages = find_packages(context.source_space_abs, exclude_subspaces=True, warnings=[])
-    # Load the environment used by this package for building
-    for pth, pkg in workspace_packages.items():
-        if pkg.name == package_name:
-            environ = get_env_loader(pkg, context)(os.environ)
-            print(format_env_dict(environ))
-            return 0
-    print('[build] Error: Package `{}` not in workspace.'.format(package_name),
-          file=sys.stderr)
-    return 1
-
 
 def main(opts):
 
@@ -285,6 +257,13 @@ def main(opts):
     if opts.no_deps and not opts.packages and not opts.unbuilt:
         sys.exit(clr("[build] @!@{rf}Error:@| With --no-deps, you must specify packages to build."))
 
+    # Are we in a parallel build profile? If so, prefer that over the active one
+    if not opts.profile:
+        enclosing_profile = metadata.find_enclosing_profile(os.getcwdu(), opts.workspace)
+        if enclosing_profile:
+            print(clr("@!\nInfo: in a parallel build folder, prefer this profile [%s]\n@|" % enclosing_profile))
+            opts.profile = enclosing_profile
+
     # Load the context
     ctx = Context.load(opts.workspace, opts.profile, opts, append=True)
 
@@ -307,12 +286,8 @@ def main(opts):
     ctx.make_args = make_args
 
     # Load the environment of the workspace to extend
-    if ctx.extend_path is not None:
-        try:
-            load_resultspace_environment(ctx.extend_path)
-        except IOError as exc:
-            sys.exit(clr("[build] @!@{rf}Error:@| Unable to extend workspace from \"%s\": %s" %
-                         (ctx.extend_path, exc.message)))
+    if ctx.underlays is not None:
+        load_resultspace_environment(ctx.underlays)
 
     # Check if the context is valid before writing any metadata
     if not ctx.source_space_exists():
@@ -352,7 +327,7 @@ def main(opts):
     if opts.dry_run:
         # TODO: Add unbuilt
         dry_run(ctx, opts.packages, opts.no_deps, opts.start_with)
-        return
+        return 0
 
     # Print the build environment for a given package and leave the filesystem untouched
     if opts.get_env:
@@ -399,6 +374,9 @@ def main(opts):
     if opts.verbose:
         os.environ['VERBOSE'] = '1'
 
+    if opts.install_only_this_time:
+        ctx.install = opts.install_only_this_time  # override
+
     return build_isolated_workspace(
         ctx,
         packages=opts.packages,
@@ -418,3 +396,52 @@ def main(opts):
         continue_on_failure=opts.continue_on_failure,
         summarize_build=opts.summarize  # Can be True, False, or None
     )
+
+##############################################################################
+# Helpers
+##############################################################################
+
+
+def dry_run(context, packages, no_deps, start_with):
+    # Print Summary
+    log(context.summary())
+    # Get all the packages in the context source space
+    # Suppress warnings since this is a utility function
+    workspace_packages = find_packages(context.source_space_abs, exclude_subspaces=True, warnings=[])
+    # Find list of packages in the workspace
+    packages_to_be_built, packages_to_be_built_deps, all_packages = determine_packages_to_be_built(
+        packages, context, workspace_packages)
+    # Assert start_with package is in the workspace
+    verify_start_with_option(start_with, packages, all_packages, packages_to_be_built + packages_to_be_built_deps)
+    if not no_deps:
+        # Extend packages to be built to include their deps
+        packages_to_be_built.extend(packages_to_be_built_deps)
+        # Also resort
+        packages_to_be_built = topological_order_packages(dict(packages_to_be_built))
+    # Print packages
+    log("Packages to be built:")
+    max_name_len = str(max([len(pkg.name) for pth, pkg in packages_to_be_built]))
+    prefix = clr('@{pf}' + ('------ ' if start_with else '- ') + '@|')
+    for pkg_path, pkg in packages_to_be_built:
+        build_type = get_build_type(pkg)
+        if build_type == 'catkin' and 'metapackage' in [e.tagname for e in pkg.exports]:
+            build_type = 'metapackage'
+        if start_with and pkg.name == start_with:
+            start_with = None
+        log(clr("{prefix}@{cf}{name:<" + max_name_len + "}@| (@{yf}{build_type}@|)")
+            .format(prefix=clr('@!@{kf}(skip)@| ') if start_with else prefix, name=pkg.name, build_type=build_type))
+    log("Total packages: " + str(len(packages_to_be_built)))
+
+
+def print_build_env(context, package_name):
+    workspace_packages = find_packages(context.source_space_abs, exclude_subspaces=True, warnings=[])
+    # Load the environment used by this package for building
+    for pth, pkg in workspace_packages.items():
+        if pkg.name == package_name:
+            environ = get_env_loader(pkg, context)(os.environ)
+            print(format_env_dict(environ))
+            return 0
+    print('[build] Error: Package `{}` not in workspace.'.format(package_name),
+          file=sys.stderr)
+    return 1
+

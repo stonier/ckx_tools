@@ -19,7 +19,7 @@ import pkg_resources
 import shutil
 import yaml
 
-from .common import mkdir_p
+from . import common
 
 METADATA_DIR_NAME = '.catkin_tools'
 
@@ -127,6 +127,31 @@ def find_enclosing_workspace(search_start_path):
             break
 
     return None
+
+def find_enclosing_profile(search_start_path, workspace_hint):
+    """Discover a parallel build folder backed by a profile if there
+    is one to be discovered at or below the specified search start path
+    hint. This is useful so that simply switching to the parallel build
+    folder is enough to activate the various commands instead of having
+    to switch to the active profile.
+
+    :param str search_start_path: directory to start searching from
+    :param str workspace_hint: should be from this workspace (may be None)
+    :returns: name of the associated profile or `None` if not found
+    """
+    enclosing_workspace = find_enclosing_workspace(search_start_path)
+    expected_workspace = find_enclosing_workspace(workspace_hint or search_start_path)
+    if enclosing_workspace and \
+       enclosing_workspace == expected_workspace and \
+       enclosing_workspace != search_start_path:
+        candidate_profile_name = os.path.basename(search_start_path)
+        parent_path = os.path.abspath(os.path.join(search_start_path, os.pardir))
+        while parent_path != enclosing_workspace:
+            candidate_profile_name = os.path.basename(parent_path)
+            parent_path = os.path.abspath(os.path.join(parent_path, os.pardir))
+        return candidate_profile_name
+    else:
+        return None
 
 
 def migrate_metadata(workspace_path):
@@ -248,7 +273,6 @@ def init_metadata_root(workspace_path, reset=False):
     if not os.path.exists(os.path.join(metadata_root_path, 'CATKIN_IGNORE')):
         open(os.path.join(metadata_root_path, 'CATKIN_IGNORE'), 'a').close()
 
-
 def init_profile(workspace_path, profile_name, reset=False):
     """Initialize a profile directory in a given workspace.
 
@@ -271,7 +295,7 @@ def init_profile(workspace_path, profile_name, reset=False):
             os.mkdir(profile_path)
     else:
         # Create a new .catkin_tools directory
-        mkdir_p(profile_path)
+        common.mkdir_p(profile_path)
 
 
 def get_profile_names(workspace_path):
@@ -311,6 +335,12 @@ def remove_profile(workspace_path, profile_name):
 
     if os.path.exists(profile_path):
         shutil.rmtree(profile_path)
+    if profile_name != DEFAULT_PROFILE_NAME:
+        shutil.rmtree(os.path.join(workspace_path, profile_name))
+    else:
+        # clean up config files
+        for filename in ['config.cmake', 'eclipse', 'custom.bash', 'konsole', 'gnome-terminal']:
+            os.remove(os.path.join(workspace_path, filename))
 
 
 def set_active_profile(workspace_path, profile_name):
@@ -395,7 +425,8 @@ def get_metadata(workspace_path, profile, verb):
         return dict()
 
     with open(metadata_file_path, 'r') as metadata_file:
-        return yaml.load(metadata_file)
+        result = yaml.load(metadata_file)
+        return result
 
 
 def update_metadata(workspace_path, profile, verb, new_data={}, no_init=False, merge=True):

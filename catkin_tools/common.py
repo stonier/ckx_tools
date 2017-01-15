@@ -54,6 +54,56 @@ except NameError:
     unicode_type = str
 
 
+##############################################################################
+# Ros Track
+##############################################################################
+
+# rospkg et. al. do not seem to have a good way of getting the list of ros
+# releases, however could probably use introspection to make a good guess of
+# the default track
+
+DEFAULT_TRACK = "kinetic"
+VALID_TRACKS = ["kinetic", "jade", "indigo", "hydro", "groovy"]
+LTS_TRACKS = ["kinetic", "indigo"]
+
+##############################################################################
+# Classes and Methods
+##############################################################################
+
+def get_default_underlay():
+    """
+    Make an educated guess to what track should be used as a default underlay.
+    """
+    root_path = os.path.abspath(os.sep)
+    for track in LTS_TRACKS:
+        underlay = os.path.join(root_path, "opt", "ros", track)
+        if os.path.isdir(underlay):
+            return underlay
+    for track in VALID_TRACKS:
+        underlay = os.path.join(root_path, "opt", "ros", track)
+        if os.path.isdir(underlay):
+            return underlay
+
+def get_default_track():
+    """
+    Make an educated guess to what track should be used by a quick scan of the
+    the installed filesystem.
+    """
+    root_path = os.path.abspath(os.sep)
+    for track in LTS_TRACKS:
+        if os.path.isdir(os.path.join(root_path, "opt", "ros", track)):
+            return track
+    for track in VALID_TRACKS:
+        if os.path.isdir(os.path.join(root_path, "opt", "ros", track)):
+            return track
+    return None
+
+
+
+##############################################################################
+# Classes and Methods
+##############################################################################
+
 class FakeLock(asyncio.locks.Lock):
 
     """Fake lock used to mimic an asyncio.Lock but without causing synchronization"""
