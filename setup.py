@@ -160,6 +160,7 @@ setup(
             'list = catkin_tools.verbs.catkin_list:description',
             'locate = catkin_tools.verbs.catkin_locate:description',
             'profile = catkin_tools.verbs.catkin_profile:description',
+            'rosdep = catkin_tools.verbs.catkin_rosdep:description',
             'ws = catkin_tools.verbs.catkin_ws:description',
         ],
         'catkin_tools.jobs': [
