@@ -53,7 +53,7 @@ def _notify_linux(title, msg, icon_image):
                      stderr=subprocess.PIPE)
 
 
-def notify(title, msg, icon_image='catkin_icon.png'):
+def notify(title, msg, icon_image='ckx_icon.png'):
     if platform.system() == 'Darwin':
         return _notify_osx(title, msg, icon_image=icon_image)
     if platform.system() == 'Linux':

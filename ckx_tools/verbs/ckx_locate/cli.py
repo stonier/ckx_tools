@@ -91,7 +91,7 @@ def main(opts):
     # Check for special locations
     root_resource_path = os.path.join(os.path.dirname(__file__), '..', '..')
     if opts.shell_verbs:
-        shell_verbs = os.path.join(root_resource_path, 'verbs', 'catkin_shell_verbs.bash')
+        shell_verbs = os.path.join(root_resource_path, 'verbs', 'ckx_shell_verbs.bash')
         print(os.path.normpath(shell_verbs))
         sys.exit(0)
     elif opts.examples:

@@ -65,7 +65,7 @@ def get_data_files(prefix):
     bash_comp_dest = os.path.join(_resolve_prefix(prefix, 'bash_comp'),
                                   'etc/bash_completion.d')
     data_files.append((bash_comp_dest,
-                       ['completion/catkin_tools-completion.bash']))
+                       ['completion/ckx_tools-completion.bash']))
 
     # Zsh completion
     zsh_comp_dest = os.path.join(_resolve_prefix(prefix, 'zsh_comp'),
@@ -97,7 +97,7 @@ To enable tab completion, add the following to your '~/.bashrc':
 ----------------------------------------------------------------
 """.format(os.path.join(self.install_data,
                         'etc/bash_completion.d',
-                        'catkin_tools-completion.bash')))
+                        'ckx_tools-completion.bash')))
 
 parser = argparse.ArgumentParser(add_help=False)
 prefix_group = parser.add_mutually_exclusive_group()
@@ -114,18 +114,17 @@ setup(
     packages=find_packages(exclude=['tests*', 'docs*']),  # ['ckx_tools'],  # find_packages(exclude=['tests', 'docs']), <-- broken, it picks up sub-packages, e.g. tests.unit
     package_data={
         'ckx_tools': [
-            'notifications/resources/linux/catkin_icon.png',
-            'notifications/resources/linux/catkin_icon_red.png',
-            'verbs/catkin_config/resources/cmake/*',
-            'verbs/catkin_config/resources/templates/*',
-            'verbs/catkin_config/resources/toolchains/buildroot/*',
-            'verbs/catkin_config/resources/toolchains/ubuntu/*',
-            'verbs/catkin_config/resources/toolchains/code_sourcery/*',
-            'verbs/catkin_config/resources/toolchains/nexell/*',
-            'verbs/catkin_config/resources/platforms/generic/*',
-            'verbs/catkin_config/resources/platforms/arm/*',
-            'verbs/catkin_config/resources/platforms/intel/*',
-            'verbs/catkin_shell_verbs.bash',
+            'notifications/resources/linux/*',
+            'verbs/ckx_config/resources/cmake/*',
+            'verbs/ckx_config/resources/templates/*',
+            'verbs/ckx_config/resources/toolchains/buildroot/*',
+            'verbs/ckx_config/resources/toolchains/ubuntu/*',
+            'verbs/ckx_config/resources/toolchains/code_sourcery/*',
+            'verbs/ckx_config/resources/toolchains/nexell/*',
+            'verbs/ckx_config/resources/platforms/generic/*',
+            'verbs/ckx_config/resources/platforms/arm/*',
+            'verbs/ckx_config/resources/platforms/intel/*',
+            'verbs/ckx_shell_verbs.bash',
             'docs/examples',
         ] + osx_notification_resources
     },
