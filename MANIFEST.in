@@ -1,1 +1,3 @@
 recursive-include completion *
+include stdeb.cfg
+include README.md
