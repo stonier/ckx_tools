@@ -121,6 +121,7 @@ setup(
             'verbs/ckx_config/resources/toolchains/ubuntu/*',
             'verbs/ckx_config/resources/toolchains/code_sourcery/*',
             'verbs/ckx_config/resources/toolchains/nexell/*',
+            'verbs/ckx_config/resources/platforms/default.cmake',
             'verbs/ckx_config/resources/platforms/generic/*',
             'verbs/ckx_config/resources/platforms/arm/*',
             'verbs/ckx_config/resources/platforms/intel/*',

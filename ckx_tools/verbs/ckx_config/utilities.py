@@ -229,7 +229,7 @@ def get_platform_content(platform_name):
         finally:
             f.close()
     else:
-        raise RuntimeError("platform configuration not available [%s]" % platform_name)
+        raise RuntimeError("platform configuration not available [%s]" % platform_file)
     return platform_content
 
 def list_toolchains():
