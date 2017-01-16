@@ -73,5 +73,5 @@ release: pypi deb upload_deb
 clean:  clean_dist
 	-sudo rm -f install.record
 	-sudo rm -rf build
-	-sudo rm -rf yujin_tools.egg-info
+	-sudo rm -rf *.egg-info
 

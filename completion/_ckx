@@ -37,7 +37,7 @@ function _debug_log() {
 }
 
 # search backwards for the last given option
-_catkin_last_option() {
+_ckx_last_option() {
   for (( i=${CURRENT} ; i > 0 ; i-- )) ; do
     if [[ ${words[i]} == -* ]]; then
       echo ${words[i]}
@@ -47,7 +47,7 @@ _catkin_last_option() {
 }
 
 # Get the workspace root (if available)
-_catkin_get_enclosing_workspace() {
+_ckx_get_enclosing_workspace() {
   if [[ -n "$_workspace_root" ]]; then
     return 0
   fi
@@ -71,7 +71,7 @@ _catkin_get_enclosing_workspace() {
 }
 
 # Get the name of the enclosing package (if available)
-_catkin_get_enclosing_package() {
+_ckx_get_enclosing_package() {
   if [[ -n "$_enclosing_package" ]]; then
     return 0
   fi
@@ -97,7 +97,7 @@ _catkin_get_enclosing_package() {
 
 # Cache is invalidated if the source space has been changed since the
 # package list was cached
-_catkin_packages_caching_policy() {
+_ckx_packages_caching_policy() {
   # Get the source space path
   if [[ -z "$_workspace_source_space" ]]; then
     _debug_log "Searching for source space..."
@@ -122,13 +122,13 @@ _catkin_packages_caching_policy() {
 }
 
 # Get the packages in the workspace containing the CWD
-_catkin_get_packages() {
+_ckx_get_packages() {
 
   local cache_policy
   local cache_file_path
 
   # Get the workspace root
-  _workspace_root="$(_catkin_get_enclosing_workspace $_workspace_root_hint)"
+  _workspace_root="$(_ckx_get_enclosing_workspace $_workspace_root_hint)"
 
   if [[ "$?" -ne 0 ]]; then
     _debug_log "Couldn't get workspace root!"
@@ -144,7 +144,7 @@ _catkin_get_packages() {
   zstyle ":completion:${curcontext}:" cache-path "$cache_file_path"
   zstyle -s ":completion:${curcontext}:" cache-policy cache_policy
   if [[ -z "$cache_policy" ]]; then
-    zstyle ":completion:${curcontext}:" cache-policy _catkin_packages_caching_policy
+    zstyle ":completion:${curcontext}:" cache-policy _ckx_packages_caching_policy
   fi
 
   if ( [[ ${+_workspace_packages} -eq 0 ]] || _cache_invalid workspace_packages ) \
@@ -160,7 +160,7 @@ _catkin_get_packages() {
 }
 
 # Get the profiles in the workspace containing the CWD
-_catkin_get_profiles() {
+_ckx_get_profiles() {
   if [[ -z "$_workspace_profiles" ]]; then
 
     _debug_log "Getting profiles... ($_workspace_profiles)"
@@ -175,7 +175,7 @@ _catkin_get_profiles() {
   _wanted workspace_profiles expl 'workspace profiles' compadd -a _workspace_profiles
 }
 
-_catkin_verbs_complete() {
+_ckx_verbs_complete() {
   local verbs_array;
   verbs_array=(
     'build:Build packages'
@@ -191,12 +191,12 @@ _catkin_verbs_complete() {
   _describe -t verbs 'catkin verb' verbs_array -V verbs && return 0
 }
 
-_catkin_build_complete() {
+_ckx_build_complete() {
   # Determine if we're in a package, and should autocomplete context-aware options
   local build_opts
 
   #this_package=$(catkin list --this -u --quiet)
-  _catkin_get_enclosing_package "$PWD"
+  _ckx_get_enclosing_package "$PWD"
 
   if [[ -n $_enclosing_package ]]; then
     _debug_log "In package $this_package"
@@ -213,29 +213,29 @@ _catkin_build_complete() {
   build_opts+=(
     {-h,--help}'[Show usage help]'\
     {-w,--workspace}'[The workspace to build]:workspace:_files'\
-    '--profile[Which configuration profile to use]:profile:_catkin_get_profiles'\
+    '--profile[Which configuration profile to use]:profile:_ckx_get_profiles'\
     {-n,--dry-run}'[Show build process without actually building]'\
     {-v,--verbose}'[Print all output from build commands]'\
     {-i,--interleave}"[Print output from build commands as it's generated]"\
     {-c,--continue-on-failure}'[Build all selected packages even if some fail]'\
-    '--get-env[Print the environment for a given workspace]:package:_catkin_get_packages'\
+    '--get-env[Print the environment for a given workspace]:package:_ckx_get_packages'\
     '--force-cmake[Force CMake to run for each package]'\
     '--pre-clean[Execute clean target before building]'\
     '(--this)--unbuilt[Build packages which have not been built]'\
-    '(--start-with-this)--start-with[Skip all packages on which a package depends]:package:_catkin_get_packages'\
+    '(--start-with-this)--start-with[Skip all packages on which a package depends]:package:_ckx_get_packages'\
     '--save-config[Save configuration options]'\
     '--no-deps[Only build specified packages]'\
-    '*:package:_catkin_get_packages')
+    '*:package:_ckx_get_packages')
 
   _arguments -C $build_opts && return 0
 }
 
-_catkin_clean_complete() {
+_ckx_clean_complete() {
   # Determine if we're in a package, and should autocomplete context-aware options
   local clean_opts
 
   #this_package=$(catkin list --this -u --quiet)
-  _catkin_get_enclosing_package "$PWD"
+  _ckx_get_enclosing_package "$PWD"
 
   if [[ -n $_enclosing_package ]]; then
     _debug_log "In package $this_package"
@@ -249,7 +249,7 @@ _catkin_clean_complete() {
   clean_opts+=(
   {-h,--help}'[Show usage help]'\
     {-w,--workspace}'[Workspace path]:workspace:_files -/'\
-    '--profile[Which configuration profile to use]:profile:_catkin_get_profiles'\
+    '--profile[Which configuration profile to use]:profile:_ckx_get_profiles'\
     {-v,--verbose}'[Print all output from build commands]'\
     {-n,--dry-run}'[Show build process without actually building]'\
     {-y,--yes}'[Assume "yes" to all interactive checks]'\
@@ -262,17 +262,17 @@ _catkin_clean_complete() {
     {-i,--install}'[Remove the install space]'\
     '--dependents[Clean all packages which depend on a specified package]'\
     '--orphans[Clean any packages which are no longer in the source space]'\
-    '*:package:_catkin_get_packages')
+    '*:package:_ckx_get_packages')
 
   _arguments -C $clean_opts && return 0
 }
 
-_catkin_config_complete() {
+_ckx_config_complete() {
   local config_opts
   config_opts=(\
     {-h,--help}'[Show usage help]'\
     {-w,--workspace}'[Workspace path]:workspace:_files -/'\
-    '--profile[Which configuration profile to use]:profile:_catkin_get_profiles'\
+    '--profile[Which configuration profile to use]:profile:_ckx_get_profiles'\
     {-a,--append-args}'[Append elements for list-type arguments]'\
     {-r,--remove-args}'[Remove elements for list-type arguments]'\
     '--init[Initialize a workspace]'\
@@ -290,7 +290,7 @@ _catkin_config_complete() {
   return 1
 }
 
-_catkin_profile_complete() {
+_ckx_profile_complete() {
   local profile_verbs;
 
   _arguments -C \
@@ -313,7 +313,7 @@ _catkin_profile_complete() {
       case $line[1] in
         (set|rename|remove)
           local expl
-          _wanted workspace_profiles expl "workspace profiles" _catkin_get_profiles && return 0
+          _wanted workspace_profiles expl "workspace profiles" _ckx_get_profiles && return 0
           ;;
       esac
       ;;
@@ -322,7 +322,7 @@ _catkin_profile_complete() {
   return 1
 }
 
-_catkin_create_complete() {
+_ckx_create_complete() {
   local create_verbs;
 
   _arguments -C \
@@ -364,7 +364,7 @@ _catkin_create_complete() {
   return 1
 }
 
-_catkin_env_complete() {
+_ckx_env_complete() {
   local env_opts
   env_opts=(\
     {-h,--help}'[Show usage help]'\
@@ -375,7 +375,7 @@ _catkin_env_complete() {
   return 1
 }
 
-_catkin_init_complete() {
+_ckx_init_complete() {
   local init_opts
   init_opts=(\
     {-h,--help}'[Show usage help]'\
@@ -386,7 +386,7 @@ _catkin_init_complete() {
   return 1
 }
 
-_catkin_list_complete() {
+_ckx_list_complete() {
   local list_opts
   list_opts=(\
     {-h,--help}'[Show usage help]'\
@@ -402,7 +402,7 @@ _catkin_list_complete() {
   return 1
 }
 
-_catkin_locate_complete() {
+_ckx_locate_complete() {
   local locate_opts
   locate_opts=(\
     {-h,--help}'[Show usage help]'\
@@ -447,32 +447,32 @@ _debug_log "ISUFFIX: $ISUFFIX"
 # Switch to getting packages
 case "$state" in
   (verb)
-    _alternative _catkin_verbs_complete && ret=0
+    _alternative _ckx_verbs_complete && ret=0
     ;;
   (options)
     case $line[1] in
-      (build) _catkin_build_complete && ret=0
+      (build) _ckx_build_complete && ret=0
         ;;
-      (clean) _catkin_clean_complete && ret=0
+      (clean) _ckx_clean_complete && ret=0
         ;;
       (config)
-        if [[ "$(_catkin_last_option)" =~ "--(black|white)list" ]]; then
-          _catkin_get_packages && ret=0
+        if [[ "$(_ckx_last_option)" =~ "--(black|white)list" ]]; then
+          _ckx_get_packages && ret=0
         else
-          _catkin_config_complete && ret=0
+          _ckx_config_complete && ret=0
         fi
         ;;
-      (create) _catkin_create_complete && ret=0
+      (create) _ckx_create_complete && ret=0
         ;;
-      (env) _catkin_env_complete && ret=0
+      (env) _ckx_env_complete && ret=0
         ;;
-      (init) _catkin_init_complete && ret=0
+      (init) _ckx_init_complete && ret=0
         ;;
-      (list) _catkin_list_complete && ret=0
+      (list) _ckx_list_complete && ret=0
         ;;
-      (locate) _catkin_locate_complete && ret=0
+      (locate) _ckx_locate_complete && ret=0
         ;;
-      (profile) _catkin_profile_complete && ret=0
+      (profile) _ckx_profile_complete && ret=0
         ;;
     esac
     ret=0

@@ -70,7 +70,7 @@ def get_data_files(prefix):
     # Zsh completion
     zsh_comp_dest = os.path.join(_resolve_prefix(prefix, 'zsh_comp'),
                                  'share/zsh/site-functions')
-    data_files.append((zsh_comp_dest, ['completion/_catkin']))
+    data_files.append((zsh_comp_dest, ['completion/_ckx']))
     return data_files
 
 
@@ -110,7 +110,7 @@ prefix = userbase or opts.prefix or sys.prefix
 
 setup(
     name='ckx_tools',
-    version='0.5.0',
+    version='0.5.1',
     packages=find_packages(exclude=['tests*', 'docs*']),  # ['ckx_tools'],  # find_packages(exclude=['tests', 'docs']), <-- broken, it picks up sub-packages, e.g. tests.unit
     package_data={
         'ckx_tools': [
@@ -145,7 +145,7 @@ setup(
     description="'X' tools for working with catkin.",
     long_description="Provides command line tools for working with catkin.",
     license='Apache 2.0',
-    test_suite='tests',
+    # test_suite='tests',
     entry_points={
         'console_scripts': [
             'ckx = ckx_tools.commands.catkin:main',

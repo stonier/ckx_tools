@@ -17,7 +17,7 @@ if [[ -n ${ZSH_VERSION-} ]]; then
   autoload -U +X bashcompinit && bashcompinit
 fi
 
-_catkin_last_option()
+_ckx_last_option()
 {
   # search backwards for the last given option
   for (( i=${cword} ; i > 0 ; i-- )) ; do
@@ -28,69 +28,69 @@ _catkin_last_option()
   done
 }
 
-_catkin_verb()
+_ckx_verb()
 {
-  # search forwards to find catkin verb (neglecting global catkin opts)
+# search forwards to find ckx verb (neglecting global ckx opts)
   for (( i=1 ; i < ${cword} ; i++ )) ; do
     if [[ ${words[i]} == -* ]] ; then continue; fi
-    if [[ ${catkin_verbs} == *${words[i]}* ]] ; then
+    if [[ ${ckx_verbs} == *${words[i]}* ]] ; then
       echo ${words[i]}
       return
     fi
   done
 }
 
-_catkin_pkgs()
+_ckx_pkgs()
 {
   # return list of all packages
-  catkin --no-color list --unformatted --quiet 2> /dev/null
+  ckx --no-color list --unformatted --quiet 2> /dev/null
 }
 
 # TODO:
 # - parse --workspace and --profile options in order to complete outside of cwd
 
-_catkin()
+_ckx()
 {
-  local cur prev words cword catkin_verbs catkin_opts
+  local cur prev words cword ckx_verbs ckx_opts
   _init_completion || return # this handles default completion (variables, redirection)
 
   # complete to the following verbs
-  local catkin_verbs="build clean config create init list profile"
+  local ckx_verbs="build clean config create init list profile"
 
   # filter for long options (from bash_completion)
   local OPTS_FILTER='s/.*\(--[-A-Za-z0-9]\{1,\}=\{0,1\}\).*/\1/p'
 
   # complete to verbs ifany of these are the previous word
-  local catkin_opts=$(catkin --help 2>&1 | sed -ne $OPTS_FILTER | sort -u)
+  local ckx_opts=$(ckx --help 2>&1 | sed -ne $OPTS_FILTER | sort -u)
 
-  # complete catkin profile subcommands
-  local catkin_profile_args="add list remove rename set"
+  # complete ckx profile subcommands
+  local ckx_profile_args="add list remove rename set"
 
-  local verb=$(_catkin_verb)
+  local verb=$(_ckx_verb)
   case ${verb} in
     "")
       if [[ ${cur} == -* ]]; then
-        COMPREPLY=($(compgen -W "${catkin_opts}" -- ${cur}))
+        COMPREPLY=($(compgen -W "${ckx_opts}" -- ${cur}))
       else
-        COMPREPLY=($(compgen -W "${catkin_verbs}" -- ${cur}))
+        COMPREPLY=($(compgen -W "${ckx_verbs}" -- ${cur}))
       fi
       ;;
     build)
       if [[ ${cur} == -* ]]; then
-        local catkin_build_opts=$(catkin build --help 2>&1 | sed -ne $OPTS_FILTER | sort -u)
-        COMPREPLY=($(compgen -W "${catkin_build_opts}" -- ${cur}))
+        local ckx_build_opts=$(ckx build --help 2>&1 | sed -ne $OPTS_FILTER | sort -u)
+        COMPREPLY=($(compgen -W "${ckx_build_opts}" -- ${cur}))
       else
-        COMPREPLY=($(compgen -W "$(_catkin_pkgs)" -- ${cur}))
+        COMPREPLY=($(compgen -W "$(_ckx_pkgs)" -- ${cur}))
       fi
       ;;
     config)
       # list all options
-      local catkin_config_opts=$(catkin config --help 2>&1 | sed -ne $OPTS_FILTER | sort -u)
-      COMPREPLY=($(compgen -W "${catkin_config_opts}" -- ${cur}))
+      local ckx_config_opts=$(ckx config --help 2>&1 | sed -ne $OPTS_FILTER | sort -u)
+      COMPREPLY=($(compgen -W "${ckx_config_opts}" -- ${cur}))
 
       # list package names when --whitelist or --blacklist was given as last option
-      if [[ ${cur} != -* && $(_catkin_last_option) == --*list ]] ; then
-        COMPREPLY+=($(compgen -W "$(_catkin_pkgs)" -- ${cur}))
+      if [[ ${cur} != -* && $(_ckx_last_option) == --*list ]] ; then
+        COMPREPLY+=($(compgen -W "$(_ckx_pkgs)" -- ${cur}))
       fi
 
       # list directory names when useful
@@ -101,13 +101,13 @@ _catkin()
       fi
       ;;
     clean)
-      local catkin_clean_opts=$(catkin clean --help 2>&1 | sed -ne $OPTS_FILTER | sort -u)
-      COMPREPLY=($(compgen -W "${catkin_clean_opts}" -- ${cur}))
+      local ckx_clean_opts=$(ckx clean --help 2>&1 | sed -ne $OPTS_FILTER | sort -u)
+      COMPREPLY=($(compgen -W "${ckx_clean_opts}" -- ${cur}))
       ;;
     create)
       if [[ "${words[@]}" == *" pkg"* ]] ; then
-        local catkin_create_pkg_opts=$(catkin create pkg --help 2>&1 | sed -ne $OPTS_FILTER | sort -u)
-        COMPREPLY=($(compgen -W "${catkin_create_pkg_opts}" -- ${cur}))
+        local ckx_create_pkg_opts=$(ckx create pkg --help 2>&1 | sed -ne $OPTS_FILTER | sort -u)
+        COMPREPLY=($(compgen -W "${ckx_create_pkg_opts}" -- ${cur}))
       else
         COMPREPLY=($(compgen -W "pkg" -- ${cur}))
       fi
@@ -115,10 +115,10 @@ _catkin()
     profile)
       case ${prev} in
         profile)
-          COMPREPLY=($(compgen -W "${catkin_profile_args}" -- ${cur}))
+          COMPREPLY=($(compgen -W "${ckx_profile_args}" -- ${cur}))
           ;;
         set|rename|remove)
-          COMPREPLY=($(compgen -W "$(catkin --no-color profile list --unformatted)" -- ${cur}))
+          COMPREPLY=($(compgen -W "$(ckx --no-color profile list --unformatted)" -- ${cur}))
           ;;
         *)
           COMPREPLY=()
@@ -126,16 +126,16 @@ _catkin()
       esac
       ;;
     init)
-      local catkin_init_opts=$(catkin init --help 2>&1 | sed -ne $OPTS_FILTER | sort -u)
-      COMPREPLY=($(compgen -W "${catkin_init_opts}" -- ${cur}))
+      local ckx_init_opts=$(ckx init --help 2>&1 | sed -ne $OPTS_FILTER | sort -u)
+      COMPREPLY=($(compgen -W "${ckx_init_opts}" -- ${cur}))
       ;;
     list)
-      local catkin_list_opts=$(catkin list --help 2>&1 | sed -ne $OPTS_FILTER | sort -u)
-      COMPREPLY=($(compgen -W "${catkin_list_opts}" -- ${cur}))
+      local ckx_list_opts=$(ckx list --help 2>&1 | sed -ne $OPTS_FILTER | sort -u)
+      COMPREPLY=($(compgen -W "${ckx_list_opts}" -- ${cur}))
       ;;
   esac
 
   return 0
 }
 
-complete -F _catkin catkin
+complete -F _ckx ckx
