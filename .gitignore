@@ -36,3 +36,4 @@ nosetests.xml
 deb_dist
 
 tmp
+install.record
