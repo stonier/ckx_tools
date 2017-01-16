@@ -149,9 +149,9 @@ def find_enclosing_profile(search_start_path, workspace_hint):
         while parent_path != enclosing_workspace:
             candidate_profile_name = os.path.basename(parent_path)
             parent_path = os.path.abspath(os.path.join(parent_path, os.pardir))
-        return candidate_profile_name
-    else:
-        return None
+        if candidate_profile_name in get_profile_names(enclosing_workspace):
+            return candidate_profile_name
+    return None
 
 
 def migrate_metadata(workspace_path):
@@ -334,13 +334,16 @@ def remove_profile(workspace_path, profile_name):
     (profile_path, _) = get_paths(workspace_path, profile_name)
 
     if os.path.exists(profile_path):
-        shutil.rmtree(profile_path)
+        shutil.rmtree(profile_path)  # this is the contents in the .ckx_tools dir
     if profile_name != DEFAULT_PROFILE_NAME:
-        shutil.rmtree(os.path.join(workspace_path, profile_name))
+        shutil.rmtree(os.path.join(workspace_path, profile_name))  # this is the parallel build folder
     else:
         # clean up config files
         for filename in ['config.cmake', 'eclipse', 'custom.bash', 'konsole', 'gnome-terminal']:
             os.remove(os.path.join(workspace_path, filename))
+        # TODO : should actually pull the default context here and grab the directories
+        for d in ['build', 'devel', 'logs', 'install', 'docs']:
+            shutil.rmtree(path=os.path.join(workspace_path, d), ignore_errors=True)
 
 
 def set_active_profile(workspace_path, profile_name):

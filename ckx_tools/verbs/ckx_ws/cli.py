@@ -19,7 +19,6 @@ import argparse
 import ckx_tools.common as common
 import ckx_tools.config as config
 import ckx_tools.argument_parsing as argument_parsing
-import ckx_tools.console as console
 import ckx_tools.metadata as metadata
 import os
 import sys
@@ -98,7 +97,6 @@ def main(opts):
     '''
       Process the workspace command and return success or failure to the calling script.
     '''
-    # TODO more complete clean option - should remove all profiles, parallel build directories, etc.
 
     ########################################
     # Rosinstall Database Management
@@ -107,8 +105,7 @@ def main(opts):
         print get_rosinstall_database_uri()
         return 0
     if opts.set_rosinstall_database_uri:
-        console.pretty_print("\nNew Rosinstall Database Uri: ", console.cyan)
-        console.pretty_println("%s\n" % set_rosinstall_database_uri(opts.set_rosinstall_database_uri), console.yellow)
+        print(clr("\n@{cf}New Rosinstall Database Uri:@| @{yf}{0}@|\n").format(set_rosinstall_database_uri(opts.set_rosinstall_database_uri)))
         return 0
     if opts.list_rosinstalls:
         list_rosinstalls(opts.track)
@@ -195,14 +192,12 @@ def main(opts):
                       )
     elif initialised_new_workspace:
         print_banner("Initialised Empty Workspace")
-        console.pretty_print("Workspace  : ", console.cyan)
-        console.pretty_println(workspace_dir, console.yellow)
+        print(clr("@{cf}Workspace  : @|@{yf}{0}@|").format(workspace_dir))
         print_footer()
         print_proceed()
     else:
         print_banner("Workspace Details")
-        console.pretty_print("Workspace  : ", console.cyan)
-        console.pretty_println(workspace_dir, console.yellow)
+        print(clr("@{cf}Workspace  : @|@{yf}{0}@|").format(workspace_dir))
         print_footer()
 
     return 0
@@ -285,8 +280,7 @@ def list_rosinstalls(track):
     sorted_rosinstalls = rosinstalls.keys()
     sorted_rosinstalls.sort()
     for r in sorted_rosinstalls:
-        console.pretty_print(" " + r + ": ", console.cyan)
-        console.pretty_println("%s" % rosinstalls[r], console.yellow)
+        print(clr("@{cf} " + r + ": @|@{yf}{0}@|").format(rosinstalls[r]))
 
 
 def get_rosinstall_database(track):
