@@ -2,6 +2,11 @@
 Changelog
 ^^^^^^^^^
 
+0.5.2 (2017-01-12)
+-----------
+* Refactored catkin -> ckx (completion)
+* Bugfixed missing default.cmake installation
+
 0.5.0 (2017-01-12)
 -----------
 * Parallel build style initialisation
