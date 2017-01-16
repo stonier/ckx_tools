@@ -2,9 +2,13 @@
 Changelog
 ^^^^^^^^^
 
-Forthcoming
+0.5.0 (2017-01-12)
 -----------
-* parallel build style initialisation
+* Parallel build style initialisation
+* Refactored catkin -> ckx (python module only)
+* Underlays instead of extensions
+* New verbs - ws, rosdoc, rosdep
+* Oneshot --install in build
 
 0.4.3 (2017-01-05)
 ------------------

@@ -124,15 +124,10 @@ the --save-config argument. To see the current config, use the
     add('packages', metavar='PKGNAME', nargs='*',
         help='Workspace packages to build, package dependencies are built as well unless --no-deps is used. '
              'If no packages are given, then all the packages are built.')
-    test_group = parser.add_mutually_exclusive_group()
-    add = test_group.add_argument
-    add('-t', '--tests', action='store_true', help='Make tests [false]')
-    add('-r', '--run-tests', action='store_true', help='Run tests (does not build them) [false]')
-
-    doc_group = parser.add_mutually_exclusive_group()
-    add = doc_group.add_argument
-    add('-d', '--doc', action='store_true', help='Generates the documents for packages in the workspace.')
-    add('--doc-only', action='store_true', help='Generates the documents for packages in the workspace. Does not build source')
+    # test_group = parser.add_mutually_exclusive_group()
+    # add = test_group.add_argument
+    # add('-t', '--tests', action='store_true', help='Make tests [false]')
+    # add('-r', '--run-tests', action='store_true', help='Run tests (does not build them) [false]')
 
     # What packages to build
     pkg_group = parser.add_argument_group('Advanced Package Control', 'Control which packages get built.')
