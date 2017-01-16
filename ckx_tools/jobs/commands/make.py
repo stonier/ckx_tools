@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from catkin_tools.utils import which
+from ckx_tools.utils import which
 
 MAKE_EXEC = which('make')

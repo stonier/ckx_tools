@@ -25,7 +25,6 @@ if sys.version_info[0] == 2 and sys.version_info[1] <= 6:
 this_dir = os.path.abspath(os.path.dirname(__file__))
 osx_resources_path = os.path.join(
     this_dir,
-    'python',
     'ckx_tools',
     'notifications',
     'resources',
@@ -34,7 +33,7 @@ osx_resources_path = os.path.join(
 osx_notification_resources = [os.path.join(dp, f)
                               for dp, dn, fn in os.walk(osx_resources_path)
                               for f in fn]
-src_path = os.path.join(this_dir, 'python', 'ckx_tools')
+src_path = os.path.join(this_dir, 'ckx_tools')
 osx_notification_resources = [os.path.relpath(x, src_path)
                               for x in osx_notification_resources]
 
@@ -112,8 +111,7 @@ prefix = userbase or opts.prefix or sys.prefix
 setup(
     name='ckx_tools',
     version='0.4.3',
-    packages=['ckx_tools'],  # find_packages(exclude=['tests', 'docs']), <-- broken, it picks up sub-packages, e.g. tests.unit
-    package_dir={'ckx_tools':'python/ckx_tools'},
+    packages=find_packages(exclude=['tests*', 'docs*']),  # ['ckx_tools'],  # find_packages(exclude=['tests', 'docs']), <-- broken, it picks up sub-packages, e.g. tests.unit
     package_data={
         'ckx_tools': [
             'notifications/resources/linux/catkin_icon.png',
