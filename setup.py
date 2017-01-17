@@ -9,14 +9,15 @@ from setuptools import find_packages
 from setuptools import setup
 from setuptools.command.install import install
 
-# Setup installation dependencies
+# Setup installation dependencies, removing some so they
+# can build on the ppa
 install_requires = [
-    'catkin-pkg > 0.2.9',
+#    'catkin-pkg > 0.2.9',
     'setuptools',
     'PyYAML',
-    'osrf-pycommon > 0.1.1',
-    'rospkg',
-    'wstool'
+#    'osrf-pycommon > 0.1.1',
+#    'rospkg',
+#    'wstool'
 ]
 if sys.version_info[0] == 2 and sys.version_info[1] <= 6:
     install_requires.append('argparse')
@@ -110,7 +111,7 @@ prefix = userbase or opts.prefix or sys.prefix
 
 setup(
     name='ckx_tools',
-    version='0.5.3',
+    version='0.5.4',
     packages=find_packages(exclude=['tests*', 'docs*']),  # ['ckx_tools'],  # find_packages(exclude=['tests', 'docs']), <-- broken, it picks up sub-packages, e.g. tests.unit
     package_data={
         'ckx_tools': [
