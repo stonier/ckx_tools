@@ -108,10 +108,10 @@ prefix_group.add_argument('--prefix', default=None)
 opts, _ = parser.parse_known_args(sys.argv)
 userbase = site.getuserbase() if opts.user else None
 prefix = userbase or opts.prefix or sys.prefix
- 
+
 setup(
     name='ckx_tools',
-    version='0.5.4',
+    version='0.5.6',
     packages=find_packages(exclude=['tests*', 'docs*']),  # ['ckx_tools'],  # find_packages(exclude=['tests', 'docs']), <-- broken, it picks up sub-packages, e.g. tests.unit
     package_data={
         'ckx_tools': [

@@ -1,5 +1,8 @@
-catkin_pkg
-osrf_pycommon
+#catkin_pkg
+#osrf_pycommon
+#vcstools
+#wstool
+#rospkg
 pyyaml
 setuptools
 sphinxcontrib-ansi
