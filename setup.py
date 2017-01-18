@@ -12,12 +12,12 @@ from setuptools.command.install import install
 # Setup installation dependencies, removing some so they
 # can build on the ppa
 install_requires = [
-#    'catkin-pkg > 0.2.9',
+    'catkin-pkg > 0.2.9',
     'setuptools',
-#    'PyYAML',
-#    'osrf-pycommon > 0.1.1',
-#    'rospkg',
-#    'wstool'
+    'PyYAML',
+    'osrf-pycommon > 0.1.1',
+    'rospkg',
+    'wstool'
 ]
 if sys.version_info[0] == 2 and sys.version_info[1] <= 6:
     install_requires.append('argparse')
@@ -111,7 +111,7 @@ prefix = userbase or opts.prefix or sys.prefix
 
 setup(
     name='ckx_tools',
-    version='0.5.8',
+    version='0.5.9',
     packages=find_packages(exclude=['tests*', 'docs*']),  # ['ckx_tools'],  # find_packages(exclude=['tests', 'docs']), <-- broken, it picks up sub-packages, e.g. tests.unit
     package_data={
         'ckx_tools': [
@@ -147,7 +147,7 @@ setup(
     description="'X' tools for working with catkin.",
     long_description="Provides command line tools for working with catkin.",
     license='Apache 2.0',
-    # test_suite='tests',
+    test_suite='tests',
     entry_points={
         'console_scripts': [
             'ckx = ckx_tools.commands.catkin:main',
