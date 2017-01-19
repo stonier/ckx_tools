@@ -1,7 +1,7 @@
-Installing ``catkin_tools``
+Installing ``ckx_tools``
 ===========================
 
-You can install the ``catkin_tools`` package as a binary through a package manager like ``pip`` or ``apt-get``, or from source.
+You can install the ``ckx_tools`` package as a binary through a package manager like ``pip`` or ``apt-get``, or from source.
 
 .. note::
 
@@ -12,7 +12,7 @@ You can install the ``catkin_tools`` package as a binary through a package manag
 Installing on Ubuntu with apt-get
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-First you must have the ROS repositories which contain the ``.deb`` for ``catkin_tools``:
+First you must have the ROS repositories which contain the ``.deb`` for ``ckx_tools``:
 
 .. code-block:: bash
 
@@ -21,12 +21,12 @@ First you must have the ROS repositories which contain the ``.deb`` for ``catkin
             > /etc/apt/sources.list.d/ros-latest.list'
     $ wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
 
-Once you have added that repository, run these commands to install ``catkin_tools``:
+Once you have added that repository, run these commands to install ``ckx_tools``:
 
 .. code-block:: bash
 
     $ sudo apt-get update
-    $ sudo apt-get install python-catkin-tools
+    $ sudo apt-get install python-ckx-tools
 
 Installing on other platforms with pip
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -35,17 +35,17 @@ Simply install it with ``pip``:
 
 .. code-block:: bash
 
-    $ sudo pip install -U catkin_tools
+    $ sudo pip install -U ckx_tools
 
 Installing from source
 ^^^^^^^^^^^^^^^^^^^^^^
 
-First clone the source for ``catkin_tools``:
+First clone the source for ``ckx_tools``:
 
 .. code-block:: bash
 
-    $ git clone https://github.com/catkin/catkin_tools.git
-    $ cd catkin_tools
+    $ git clone https://github.com/stonier/ckx_tools.git
+    $ cd ckx_tools
 
 Then install the dependencies with ``pip``:
 
@@ -70,13 +70,13 @@ Then install with the ``setup.py`` file:
 Developing
 ----------
 
-To setup ``catkin_tools`` for fast iteration during development, use the ``develop`` verb to ``setup.py``:
+To setup ``ckx_tools`` for fast iteration during development, use the ``develop`` verb to ``setup.py``:
 
 .. code-block:: bash
 
     $ python setup.py develop
 
-Now the commands, like ``catkin``, will be in the system path and the local source files located in the ``catkin_tools`` folder will be on the ``PYTHONPATH``.
+Now the commands, like ``catkin``, will be in the system path and the local source files located in the ``ckx_tools`` folder will be on the ``PYTHONPATH``.
 When you are done with your development, undo this by running this command:
 
 .. code-block:: bash
@@ -87,7 +87,7 @@ When you are done with your development, undo this by running this command:
 Uninstalling from Source
 ------------------------
 
-If you installed from source with the ``--record`` option, you can run the following to remove ``catkin_tools``:
+If you installed from source with the ``--record`` option, you can run the following to remove ``ckx_tools``:
 
 .. code-block:: bash
 

@@ -1,4 +1,5 @@
 *.py[cod]
+*.tar.gz
 
 # C extensions
 *.so
@@ -36,3 +37,4 @@ nosetests.xml
 deb_dist
 
 tmp
+install.record
