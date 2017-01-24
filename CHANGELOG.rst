@@ -2,6 +2,10 @@
 Changelog
 ^^^^^^^^^
 
+0.5.3 (2017-01-24)
+-----------
+* Shifted from dependency on wstool -> vcstool
+
 0.5.2 (2017-01-12)
 -----------
 * Refactored catkin -> ckx (completion)

@@ -16,29 +16,20 @@ Implementation of the 'ckx ws' verb.
 ##############################################################################
 
 import argparse
-import ckx_tools.common as common
-import ckx_tools.config as config
-import ckx_tools.argument_parsing as argument_parsing
 import ckx_tools.metadata as metadata
 import os
 import sys
 import urllib2
 import urlparse
+import vcs_extras.vci as vci
+import vcstool.commands.import_
+import vcstool.executor
 import yaml
 
 from ckx_tools.context import Context
 from ckx_tools.terminal_color import ColorMapper
 color_mapper = ColorMapper()
 clr = color_mapper.clr
-
-##############################################################################
-# Import checks
-##############################################################################
-
-try:
-    import wstool.wstool_cli
-except ImportError:
-    sys.exit("\nThe workspace tool is not installed: 'sudo apt-get install python-wstool'\n")
 
 ##############################################################################
 # Entry Point API
@@ -52,32 +43,25 @@ Empty Workspace:\n  \
  - 'ckx ws ecl' : create an empty workspace in ./ecl.\n  \
  - 'ckx ws ~/ecl' : create an empty workspace in ~/ecl.\n  \
 From Rosinstall:\n  \
- - 'ckx ws ecl ecl.rosinstall' : populate a workspace from rosinstall file.\n  \
- - 'ckx ws ecl https://raw.github.com/stonier/ecl_core/devel/ecl.rosinstall' : populate from uri.\n  \
+ - 'ckx ws ecl ecl.repos' : populate a workspace from a .repos file.\n  \
+ - 'ckx ws ecl https://raw.github.com/stonier/ecl_core/devel/ecl.repos' : populate from url.\n  \
 From Rosinstall Database:\n  \
- - 'ckx ws ecl ecl' : populate a workspace from our rosinstall database from the default track.\n  \
- - 'ckx ws --track=kinetic ecl ecl' : populate a workspace from the current rosinstall database for kinetic.\n  \
- - 'ckx ws --merge ./ecl_extras.rosinstall' : merge sources from another rosinstall.\n  \
+ - 'ckx ws ecl ecl' : populate a workspace from the currently set version control index.\n  \
+ - 'ckx ws --merge ./ecl_extras.repos' : merge sources from another .repos installer.\n  \
 Management:\n  \
  - 'ckx ws --clean' : clean metadata produced by 'ckx config', 'ckx build' from the workspace.\n  \
 Configuration:\n  \
- - 'ckx settings --get-default-track' : shows the currently set default track.\n  \
- - 'ckx settings --set-default-track=kinetic' : sets the currently set default track.\n  \
- - 'ckx ws --get-rosinstall-database-uri' : return the currently configured rosinstall database uri.\n  \
- - 'ckx ws --set-rosinstall-database-uri' : save this url as the default rosinstall database uri.\
+ - 'ckx ws --get-vci-url' : return the currently configured version control index url.\n  \
+ - 'ckx ws --set-vci-url' : save this url as the default version control index url.\
  "
     return overview + instructions
 
 
 def prepare_arguments(parser):
-    default_track = common.get_default_track()
-
     parser.epilog = help_string()
     add = parser.add_argument
     add('dir', nargs='?', default=os.getcwd(), help='directory to use for the workspace [cwd]')
-    add('--track', action='store', default=default_track, help='retrieve rosinstalls relevant to this track %s [%s]' % (common.VALID_TRACKS, default_track))
-    add('-m', '--merge', action='store', default=None, help='merge a keyed (--list-rosinstall) rosinstall into the current workspace')
-    add('-j', '--jobs', action='store', default=1, help='how many parallel threads to use for installing[1]')
+    add('-j', '--jobs', action='store', default=10, help='how many parallel threads to use for installing [10]')
     add('uri', nargs=argparse.REMAINDER, default=None, help='uri for a rosinstall file [None]')
 
     management_group = parser.add_argument_group('Management', 'options to assist in managing your workspace')
@@ -87,11 +71,12 @@ def prepare_arguments(parser):
 
     configuration_group = parser.add_argument_group('Configuration', 'Options to assist in configuring this tool')
     add = configuration_group.add_argument
-    add('--list-rosinstalls', action='store_true', help='list all currently available rosinstalls [false]')
-    parser.add_argument('--get-rosinstall-database-uri', action='store_true', help='print the default rosinstall database uri')
-    parser.add_argument('--set-rosinstall-database-uri', action='store', default=None, help='set a new default  rosinstall database uri')
+    add('--list', action='store_true', help='list all currently available repos in the index [false]')
+    parser.add_argument('--get-vci-url', action='store_true', help='print the default rosinstall database uri')
+    parser.add_argument('--set-vci-url', action='store', default=None, help='set a new default  rosinstall database uri')
 
     return parser
+
 
 def main(opts):
     '''
@@ -99,16 +84,23 @@ def main(opts):
     '''
 
     ########################################
-    # Rosinstall Database Management
+    # Version Control Index Management
     ########################################
-    if opts.get_rosinstall_database_uri:
-        print get_rosinstall_database_uri()
+    if opts.get_vci_url:
+        print(clr("\n@{cf}URL @|: @{yf}{0}@|\n").format(vci.config.get_index_url()))
         return 0
-    if opts.set_rosinstall_database_uri:
-        print(clr("\n@{cf}New Rosinstall Database Uri:@| @{yf}{0}@|\n").format(set_rosinstall_database_uri(opts.set_rosinstall_database_uri)))
+    if opts.set_vci_url:
+        vci.config.set_index_url(opts.set_vci_url)
+        print(clr("\n@{cf}URL @|: @{yf}{0}@|\n").format(opts.set_vci_url))
         return 0
-    if opts.list_rosinstalls:
-        list_rosinstalls(opts.track)
+    if opts.list:
+        url = vci.config.get_index_url()
+        try:
+            contents = vci.index_contents.get(url)
+        except urllib2.URLError as e:
+            print(clr("\n@{rf}[ERROR] could not retrieve {0}@|").format(str(e)))
+            sys.exit(1)
+        vci.index_contents.display(url, contents)
         return 0
 
     ########################################
@@ -143,8 +135,7 @@ def main(opts):
                 workspace_path=workspace_dir or os.getcwd(),
                 reset=False)
             ctx = Context.load(workspace_dir)
-
-            init_sources(sources_dir)
+            os.mkdir(sources_dir)
             initialised_new_workspace = True
         else:
             print('[ws] catkin workspace `%s` found.' % (ctx.workspace))
@@ -158,36 +149,37 @@ def main(opts):
     ####################
     # Rosinstalls
     ####################
+    file_list = []
     uri_list = []
     lookup_name_list = []
-    lookup_database = None
+    lookup_index_url = vci.config.get_index_url()
     if opts.uri:
         # parse the list looking for 1) abs 2) rel 3) lookup names, 4) http uri's
         for uri in opts.uri:
             if os.path.isabs(uri):
-                uri_list.append(uri)
+                file_list.append(uri)
             elif os.path.isfile(os.path.join(os.getcwd(), uri)):
-                uri_list.append(os.path.join(os.getcwd(), uri))
+                file_list.append(os.path.join(os.getcwd(), uri))
             elif urlparse.urlparse(uri).scheme == "":  # not a http element, let's look up our database
                 lookup_name_list.append(uri)
             else:  # it's a http element'
                 uri_list.append(uri)
-        # lookup the database and convert to http uri's if necessary
-        if lookup_name_list:
-            try:
-                rosinstall_database, lookup_database = get_rosinstall_database(opts.track)
-            except RuntimeError as exc:
-                print(clr("[ws] @!@{rf}Error: %s@|" % str(exc)))
-                return 1
-            (database_name_list, database_uri_list) = parse_database(lookup_name_list, rosinstall_database)
-            lookup_name_list.extend(database_name_list)
-            uri_list.extend(database_uri_list)
-        populate_sources(sources_dir, uri_list, opts.jobs)
+#         # lookup the database and convert to http uri's if necessary
+#         if lookup_name_list:
+#             try:
+#                 rosinstall_database, lookup_database = get_rosinstall_database(opts.track)
+#             except RuntimeError as exc:
+#                 print(clr("[ws] @!@{rf}Error: %s@|" % str(exc)))
+#                 return 1
+#             (database_name_list, database_uri_list) = parse_database(lookup_name_list, rosinstall_database)
+#             lookup_name_list.extend(database_name_list)
+#             uri_list.extend(database_uri_list)
+        populate_sources(sources_dir, file_list, uri_list, lookup_name_list, opts.jobs)
         print_details(workspace_dir,
+                      file_list,
                       uri_list,
                       lookup_name_list,
-                      opts.track,
-                      lookup_database,
+                      lookup_index_url,
                       initialised_new_workspace
                       )
     elif initialised_new_workspace:
@@ -208,132 +200,86 @@ def main(opts):
 
 DEFAULT_ROSINSTALL_DATABASE = 'https://raw.github.com/stonier/ckx_tools/rosinstalls'
 
-def get_rosinstall_database_uri():
-    filename = os.path.join(config.home(), "rosinstall_database")
-    try:
-        f = open(filename, 'r')
-    except IOError:
-        return set_rosinstall_database_uri()
-    rosinstall_database = f.read()
-    f.close()
-    return rosinstall_database
 
-def set_rosinstall_database_uri(rosinstall_database=DEFAULT_ROSINSTALL_DATABASE):
-    '''
-      Set a uri for your rosinstall database.
-    '''
-    # could actually check that it is a valid uri though.
-    filename = os.path.join(config.home(), "rosinstall_database")
-    f = open(filename, 'w+')
-    try:
-        f.write(rosinstall_database.encode('utf-8'))
-    finally:
-        f.close()
-    return rosinstall_database
+def _execute_vci(args):
+    """
+    :param [str] args: list of args to pass to vci
+    """
 
 ##############################################################################
 # Helpers
 ##############################################################################
 
-def init_sources(base_path):
+
+class Args(dict):
     """
-    Init an empty wstools source workspace.
-
-    :param str base_path: location of the wstool workspace
+    Example:
+    m = Map({'first_name': 'Eduardo'}, last_name='Pool', age=24, sports=['Soccer'])
     """
-    wstool_arguments = ['wstool',
-                        'init',
-                        base_path,
-                        ]
-    wstool.wstool_cli.wstool_main(wstool_arguments)
+    def __init__(self, *args, **kwargs):
+        super(Args, self).__init__(*args, **kwargs)
+        for arg in args:
+            if isinstance(arg, dict):
+                for k, v in arg.iteritems():
+                    self[k] = v
 
-def populate_sources(base_path, uri_list, parallel_jobs):
+        if kwargs:
+            for k, v in kwargs.iteritems():
+                self[k] = v
+
+    def __getattr__(self, attr):
+        return self.get(attr)
+
+    def __setattr__(self, key, value):
+        self.__setitem__(key, value)
+
+    def __setitem__(self, key, value):
+        super(Args, self).__setitem__(key, value)
+        self.__dict__.update({key: value})
+
+    def __delattr__(self, item):
+        self.__delitem__(item)
+
+    def __delitem__(self, key):
+        super(Args, self).__delitem__(key)
+        del self.__dict__[key]
+
+
+def populate_sources(base_path, file_list, uri_list, lookup_name_list, parallel_jobs):
     '''
-      :param str base_path: location of the wstool workspace
-      :param uri_list: list of uri's to rosinstall files
-      :type uri_list: list of str
+      :param str base_path: location of the vcstool workspace
+      :param str file_list: list of files to setup
+      :param str uri_list: list of url's to setup
+      :param str lookup_name_list: list of vci keys to lookup and setup
+      :param int parallel_jobs: faster, faster
     '''
-    for uri in uri_list:
-        wstool_arguments = ['wstool',
-                            'merge',
-                            '--target-workspace=%s' % base_path
-                            ]
-        wstool_arguments.append(uri)
-        wstool.wstool_cli.wstool_main(wstool_arguments)
-    # update
-    wstool_arguments = ['wstool',
-                        'update',
-                        '-j %s' % str(parallel_jobs),
-                        '--target-workspace=%s' % base_path
-                        ]
-    wstool.wstool_cli.wstool_main(wstool_arguments)
+    combined_yaml_contents = {'repositories': {}}
+    if uri_list:
+        print("@{yf}[WARN] populating from uri's is not supported at this time@|")
+    for filename in file_list:
+        print("Populating from filename {0}".format(filename))
+        with open(filename, 'r') as stream:
+            try:
+                new_yaml_contents = yaml.load(stream)
+                combined_yaml_contents['repositories'].update(new_yaml_contents['repositories'])
+            except yaml.YAMLError as e:
+                print(clr("@{yf}[WARN] could not open '{0}', skipping [{1}]@|").format(filename, str(e)))
+    if lookup_name_list:
+        print("Populating from lookup names {0}".format(lookup_name_list))
+        new_yaml_contents = vci.find.create_yaml_from_key(lookup_name_list)
+        combined_yaml_contents['repositories'].update(new_yaml_contents['repositories'])
 
-def list_rosinstalls(track):
-    if not track:
-        track = common.get_default_track()
-    rosinstall_database_uri = '%s/%s.yaml' % (get_rosinstall_database_uri(), track)
-    try:
-        response = urllib2.urlopen(rosinstall_database_uri)
-    except urllib2.URLError as unused_e:
-        raise urllib2.URLError("rosinstall database uri not found [{0}]".format(rosinstall_database_uri))
-    rosinstalls = yaml.load(response.read())
-    sorted_rosinstalls = rosinstalls.keys()
-    sorted_rosinstalls.sort()
-    for r in sorted_rosinstalls:
-        print(clr("@{cf} " + r + ": @|@{yf}{0}@|").format(rosinstalls[r]))
-
-
-def get_rosinstall_database(track):
-    lookup_database = get_rosinstall_database_uri()
-    rosinstall_database_uri = '%s/%s.yaml' % (lookup_database, track)
-    try:
-        unused_response = urllib2.urlopen(rosinstall_database_uri)
-    except urllib2.URLError as unused_e:
-        raise RuntimeError("rosinstall database uri not found [{0}]".format(rosinstall_database_uri))
-    response = urllib2.urlopen('%s/%s.yaml' % (lookup_database, track))
-    rosinstall_database = yaml.load(response.read())
-    return rosinstall_database, lookup_database
-
-
-def parse_database(search_names, rosinstall_database):
-    names = []
-    sources = []
-    for name in search_names:
-        if name in rosinstall_database:
-            elements = rosinstall_database[name]
-            new_names = []
-            new_sources = []
-            if type(elements) is list:
-                for element in elements:
-                    if element.endswith('.rosinstall'):
-                        new_sources.append(element)
-                    else:
-                        new_names.append(element)
-            else:  # single entry
-                if elements.endswith('.rosinstall'):
-                    new_sources.append(elements)
-                else:
-                    new_names.append(elements)
-            names.extend(new_names)
-            sources.extend(new_sources)
-            if new_names:
-                (new_names, new_sources) = parse_database(new_names, rosinstall_database)
-                names.extend(new_names)
-                sources.extend(new_sources)
-        else:
-            raise RuntimeError("not found in the rosinstall database [%s]" % name)
-#                    (new_names, new_sources) = parse_database([elements], rosinstall_database)
-#                        (new_names, new_sources) = parse_database([element], rosinstall_database)
-#                        names.extend(new_names)
-#                        sources.extend(new_sources)
-#                    sources.append(elements)
-#                    names.extend(new_names)
-#                    sources.extend(new_sources)
-    return (names, sources)
+    # the vcstool way (alternative : subprocess it)
+    args = Args({'path': base_path, 'debug': False, 'workers': parallel_jobs, 'repos': True})
+    repos = vcstool.commands.import_.get_repos_in_vcstool_format(combined_yaml_contents['repositories'])
+    jobs = vcstool.commands.import_.generate_jobs(repos, args)  # need to wire up a special args here
+    results = vcstool.executor.execute_jobs(jobs, show_progress=True, number_of_workers=parallel_jobs, debug_jobs=False)
+    vcstool.executor.output_results(results)
 
 ##############################################################################
 # Printers
 ##############################################################################
+
 
 def print_banner(title):
     width = 80
@@ -341,24 +287,29 @@ def print_banner(title):
     print(clr("@!{text:^{width}}".format(text=title, width=width) + "@|"))
     print(clr("@!*" * width + "@|"))
 
+
 def print_footer():
     width = 80
     print(clr("@!*" * width + "\n" + "@|"))
 
-def print_details(workspace_dir, uri_list, lookup_name_list, lookup_track, lookup_database, initialised_new_workspace):
+
+def print_details(workspace_dir, file_list, uri_list, lookup_name_list, lookup_index_url, initialised_new_workspace):
     if initialised_new_workspace:
         print_banner("Initialised Workspace")
     else:
         print_banner("Updated Workspace")
     print(clr("@{cf}Workspace  : @|@{yf}" + workspace_dir + "@|"))
     if lookup_name_list:
-        s = "@{cf}Keys       : @|@{yf}"
+        print(clr("@{cf}VCI Url    : @|@{yf}" + lookup_index_url + "@|"))
+        s = "@{cf}VCI Keys   : @|@{yf}"
         for lookup_name in lookup_name_list:
             s += "%s " % lookup_name
         s += "@|"
         print(clr(s))
-        print(clr("@{cf}Track      : @|@{yf}" + lookup_track + "@|"))
-        print(clr("@{cf}Database   : @|@{yf}" + lookup_database + "@|"))
+    if file_list:
+        print(clr("@{cf}Files      : @|@{yf}%s@|" % file_list[0]))
+        for filename in file_list[1:]:
+            print(clr("@{cf}           : @|@{yf}%s@|" % filename))
     if uri_list:
         print(clr("@{cf}Rosisntalls: @|@{yf}%s@|" % uri_list[0]))
         for uri in uri_list[1:]:
@@ -367,7 +318,6 @@ def print_details(workspace_dir, uri_list, lookup_name_list, lookup_track, looku
     if initialised_new_workspace:
         print_proceed()
 
+
 def print_proceed():
     print(clr("@{cf}Proceed to configure parallel builds with 'ckx config'.@|\n"))
-
-

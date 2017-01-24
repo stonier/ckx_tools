@@ -13,7 +13,8 @@ if [ "${VIRTUAL_ENV}" == "" ]; then
     # probably some python setup.py target which will do this for you
     pip install catkin_pkg
     pip install pyyaml
-    pip install wstool
+    pip install vcstool
+    pip install vcs_extras
     pip install rospkg
   fi
 fi
