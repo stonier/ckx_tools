@@ -16,12 +16,14 @@ Implementation of the 'ckx rosdep' verb.
 ##############################################################################
 
 import os
+import subprocess
+import sys
 import traceback
 
 try:
-    from queue import Queue # Python3
+    from queue import Queue  # Python3
 except ImportError:
-    from Queue import Queue # Python2
+    from Queue import Queue  # Python2
 
 import ckx_tools.argument_parsing as argument_parsing
 import ckx_tools.common as common
@@ -44,6 +46,7 @@ clr = color_mapper.clr
 # Entry Point API
 ##############################################################################
 
+
 def help_string():
     instructions = clr("@!Examples@|\n\n  \
 @{gf}Minimal Use Cases@|\n\n  \
@@ -55,11 +58,12 @@ def help_string():
  ")
     return instructions
 
+
 def prepare_arguments(parser):
     default_track = common.get_default_track()
 
     parser.epilog = help_string()
-    argument_parsing.add_context_args(parser) # workspace / profile args
+    argument_parsing.add_context_args(parser)  # workspace / profile args
     add = parser.add_argument
 
     add('--install', '-i', action='store_true', default=False,
@@ -89,14 +93,56 @@ def main(opts):
 
     underlays = context.cmake_prefix_path.split(';')
     if opts.install:
-        print("Installing Rosdeps")
+        # alternative: the ckx tools job server way, but rosdep install needs sudo and this adds root logs!
+        # create_and_execute_job('install', cmd, context.workspace, context.log_space_abs)
+        # NOTE: don't use log here - user is probably running sudo, prefer sys.stdout.write
+        sys.stdout.write(clr("@!Installing Rosdeps@|\n"))
         cmd = rosdeps_install_command(context, underlays, opts.track)
-        create_and_execute_job('install', cmd, context.workspace, context.log_space_abs)
+        try:
+            proc = subprocess.Popen(
+                cmd, cwd=context.source_space_abs, shell=False,
+                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=os.environ.copy()
+            )
+        except OSError as e:
+            sys.stdout.write(clr("@{rf}[ERROR] failed command '{0}': {1}").format(cmd, e))
+            return 1
+        error_flag = False
+        while True:
+            line = proc.stdout.readline().decode('utf8', 'replace')
+            line = unicode(line)
+            if proc.returncode is not None or not line:
+                break
+            if line.startswith("ERROR"):
+                error_flag = True
+            if error_flag:
+                sys.stdout.write(clr("@{rf}" + line + "@!"))
+            else:
+                sys.stdout.write(line)
+        proc.wait()
+        # perhaps check proc.returncode and print ERROR if true
         return 0
     if opts.keys:
-        print("Listing Rosdep Keys")
+        sys.stdout.write(clr("@!List Rosdep Keys@|\n"))
         cmd = rosdeps_keys_command(context, underlays, opts.track)
-        create_and_execute_job('keys', cmd, context.workspace, context.log_space_abs)
+        try:
+            proc = subprocess.Popen(
+                cmd, cwd=context.source_space_abs, shell=False,
+                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=os.environ.copy()
+            )
+        except OSError as e:
+            sys.stdout.write(clr("@{rf}[ERROR] failed command '{0}': {1}").format(cmd, e))
+            return 1
+        proc.wait()
+        out, err = proc.communicate()
+        if err:
+            sys.stdout.write(clr("@{rf}" + err + "@!"))
+        else:
+            sys.stdout.write(clr("@{gf}  Keys@!\n"))
+            rosdep_keys = [s for s in out.split("\n") if s]  # drop empty lines
+            for key in sorted(rosdep_keys):
+                sys.stdout.write(clr("   @{cf}+@{yf} {0}\n").format(key))
+
+        # create_and_execute_job('keys', cmd, context.workspace, context.log_space_abs)
         return 0
     return 0
 
@@ -104,9 +150,10 @@ def main(opts):
 # Helpers
 ##############################################################################
 
+
 def extend_cmd_from_paths(underlays):
     extended_cmd = []
-    print("  Underlays")
+    sys.stdout.write(clr("  @{gf}From Paths@!\n"))
     for underlay in underlays:
         underlay_path = underlay
         # if it is a devel workspace -> hunt for the sources
@@ -117,10 +164,11 @@ def extend_cmd_from_paths(underlays):
                 underlay_path = underlay_source_path
         if os.path.isdir(underlay_path):
             extended_cmd += ['--from-paths', underlay_path]
-            print("   - adding '%s'" % underlay_path)
+            sys.stdout.write(clr("   @{cf}+@{yf} {0}\n").format(underlay_path))
         else:
-            print("   - not adding '%s' [not found]" % underlay_path)
+            sys.stdout.write(clr("   @{cf}-@{rf} {0} [not found]\n").format(underlay_path))
     return extended_cmd
+
 
 def rosdeps_keys_command(context, underlays, rosdistro):
     """
@@ -133,6 +181,7 @@ def rosdeps_keys_command(context, underlays, rosdistro):
     cmd += ['--from-paths', source_path, '--ignore-src', '--rosdistro', rosdistro]
     return cmd
 
+
 def rosdeps_install_command(context, underlays, rosdistro):
     """
     :param str underlays: comma separated string of underlays
@@ -144,6 +193,7 @@ def rosdeps_install_command(context, underlays, rosdistro):
     cmd += extend_cmd_from_paths(underlays)
     cmd += ['--from-paths', source_path, '--ignore-src', '--rosdistro', rosdistro, '-y']
     return cmd
+
 
 def create_and_execute_job(job_name, cmd, workspace_path, log_path):
     """
@@ -170,7 +220,7 @@ def create_and_execute_job(job_name, cmd, workspace_path, log_path):
         jobs=[job],
         max_toplevel_jobs=1,
         available_jobs=[],  # [pkg.name for _, pkg in context.packages],
-        whitelisted_jobs= [],
+        whitelisted_jobs=[],
         blacklisted_jobs=[],
         event_queue=event_queue,
         show_buffered_stdout=True,
@@ -185,7 +235,7 @@ def create_and_execute_job(job_name, cmd, workspace_path, log_path):
             event_queue=event_queue,
             log_path=log_path,
             max_toplevel_jobs=1
-            ))
+        ))
     except Exception:
         status_thread.keep_running = False
         status_thread.join(1.0)
@@ -193,6 +243,7 @@ def create_and_execute_job(job_name, cmd, workspace_path, log_path):
     status_thread.join(1.0)
 
     return 0
+
 
 def load_env(base_env):
     """

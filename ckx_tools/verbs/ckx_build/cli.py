@@ -204,6 +204,7 @@ the --save-config argument. To see the current config, use the
 
     return parser
 
+
 def main(opts):
 
     # Check for develdebug mode
@@ -256,7 +257,7 @@ def main(opts):
     if not opts.profile:
         enclosing_profile = metadata.find_enclosing_profile(os.getcwdu(), opts.workspace)
         if enclosing_profile:
-            print(clr("@!\nInfo: in a parallel build folder, prefer this profile [%s]\n@|" % enclosing_profile))
+            log(clr("@!\nInfo: in a parallel build folder, prefer this profile [%s]\n@|" % enclosing_profile))
             opts.profile = enclosing_profile
 
     # Load the context

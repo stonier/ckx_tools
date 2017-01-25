@@ -2,6 +2,11 @@
 Changelog
 ^^^^^^^^^
 
+0.5.4 (2017-01-25)
+-----------
+* Rosdep install real time feedback
+* Rosdep keys now sorted
+
 0.5.3 (2017-01-24)
 -----------
 * Shifted from dependency on wstool -> vcstool
