@@ -339,7 +339,7 @@ def remove_profile(workspace_path, profile_name):
         shutil.rmtree(os.path.join(workspace_path, profile_name))  # this is the parallel build folder
     else:
         # clean up config files
-        for filename in ['config.cmake', 'eclipse', 'custom.bash', 'konsole', 'gnome-terminal']:
+        for filename in ['config.cmake', 'eclipse', 'setup.bash', 'konsole', 'gnome-terminal']:
             os.remove(os.path.join(workspace_path, filename))
         # TODO : should actually pull the default context here and grab the directories
         for d in ['build', 'devel', 'logs', 'install', 'docs']:

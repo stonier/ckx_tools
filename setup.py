@@ -148,7 +148,7 @@ setup(
     description="'X' tools for working with catkin.",
     long_description="Provides command line tools for working with catkin.",
     license='Apache 2.0',
-    test_suite='tests',
+    # test_suite='tests',
     entry_points={
         'console_scripts': [
             'ckx = ckx_tools.commands.catkin:main',

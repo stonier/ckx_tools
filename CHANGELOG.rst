@@ -2,6 +2,10 @@
 Changelog
 ^^^^^^^^^
 
+Forthcoming
+-----------
+* Config custom.bash -> setup.bash
+
 0.5.11 (2017-01-25)
 -----------
 * Rosdep install real time feedback
