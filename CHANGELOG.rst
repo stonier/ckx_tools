@@ -2,26 +2,27 @@
 Changelog
 ^^^^^^^^^
 
-Forthcoming
------------
+0.5.12 (2017-02-02)
+-------------------
 * Config custom.bash -> setup.bash
+* Dependency vcs_extras -> vci
 
 0.5.11 (2017-01-25)
------------
+-------------------
 * Rosdep install real time feedback
 * Rosdep keys now sorted
 
 0.5.10 (2017-01-24)
------------
+-------------------
 * Shifted from dependency on wstool -> vcstool
 
 0.5.2 (2017-01-12)
------------
+------------------
 * Refactored catkin -> ckx (completion)
 * Bugfixed missing default.cmake installation
 
 0.5.0 (2017-01-12)
------------
+------------------
 * Parallel build style initialisation
 * Refactored catkin -> ckx (python module only)
 * Underlays instead of extensions
