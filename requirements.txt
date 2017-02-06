@@ -1,6 +1,6 @@
 catkin_pkg
 osrf_pycommon
-vcs_extras
+vci
 vcstool
 rospkg
 pyyaml

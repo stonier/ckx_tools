@@ -14,7 +14,7 @@ if [ "${VIRTUAL_ENV}" == "" ]; then
     pip install catkin_pkg
     pip install pyyaml
     pip install vcstool
-    pip install vcs_extras
+    pip install vci
     pip install rospkg
   fi
 fi

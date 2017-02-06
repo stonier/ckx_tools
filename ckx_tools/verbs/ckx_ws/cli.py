@@ -21,7 +21,7 @@ import os
 import sys
 import urllib2
 import urlparse
-import vcs_extras.vci as vci
+import vci
 import vcstool.commands.import_
 import vcstool.executor
 import yaml
