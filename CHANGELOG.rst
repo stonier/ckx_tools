@@ -2,6 +2,10 @@
 Changelog
 ^^^^^^^^^
 
+0.5.13 (2017-02-10)
+-------------------
+* Dependency vcs_extras -> vci
+
 0.5.12 (2017-02-02)
 -------------------
 * Config custom.bash -> setup.bash
