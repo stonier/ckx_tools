@@ -14,7 +14,7 @@ fi
 # always assume it is in ./devel. This could be otherwise
 # but we have had no use case requiring it yet.
 PWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-if [ -d ${PWD}/devel ]; then
+if [ -f ${PWD}/devel/setup.bash ]; then
   source ${PWD}/devel/setup.bash
   alias cddevel="cd ${PWD}/devel"
 fi
@@ -31,3 +31,22 @@ fi
 # anywhere if you are already in a workspace session
 export CKX_WORKSPACE=%(cwd)s
 
+cd ${CKX_WORKSPACE}
+
+###########################
+# Colours
+###########################
+
+export BOLD="\e[1m"
+export CYAN="\e[36m"
+export GREEN="\e[32m"
+export YELLOW="\e[33m"
+export RED="\e[31m"
+export RESET="\e[0m"
+
+echo ""
+echo -e "${CYAN}CKX_BUILD_ROOT: ${YELLOW}${CKX_BUILD_ROOT}${RESET}"
+echo -e "${CYAN}CKX_WORKSPACE : ${YELLOW}${CKX_WORKSPACE}${RESET}"
+echo ""
+echo "I'm grooty, you should be too."
+echo ""

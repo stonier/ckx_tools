@@ -2,6 +2,11 @@
 Changelog
 ^^^^^^^^^
 
+0.5.14 (2017-02-15)
+-------------------
+* setup.bash teleports you to the workspace
+*
+
 0.5.13 (2017-02-10)
 -------------------
 * Dependency vcs_extras -> vci
