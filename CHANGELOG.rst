@@ -2,6 +2,10 @@
 Changelog
 ^^^^^^^^^
 
+0.5.16 (2017-05-21)
+-------------------
+* bugfix broken --workdir command for konsole
+
 0.5.15 (2017-02-16)
 -------------------
 * setup.bash teleports you to the workspace
