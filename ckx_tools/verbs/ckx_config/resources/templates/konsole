@@ -2,4 +2,4 @@
 
 PWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-konsole -e /bin/bash --init-file ${PWD}/setup.bash --workdir=${PWD}
+konsole -e /bin/bash --init-file ${PWD}/setup.bash
