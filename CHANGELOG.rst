@@ -2,6 +2,10 @@
 Changelog
 ^^^^^^^^^
 
+0.5.17 (2018-02-20)
+-------------------
+* update to match vcs inclusion of retry args
+
 0.5.16 (2017-05-21)
 -------------------
 * bugfix broken --workdir command for konsole

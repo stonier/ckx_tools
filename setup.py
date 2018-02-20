@@ -112,7 +112,7 @@ prefix = userbase or opts.prefix or sys.prefix
 
 setup(
     name='ckx_tools',
-    version='0.5.16',
+    version='0.5.17',
     packages=find_packages(exclude=['tests*', 'docs*']),  # ['ckx_tools'],  # find_packages(exclude=['tests', 'docs']), <-- broken, it picks up sub-packages, e.g. tests.unit
     package_data={
         'ckx_tools': [
