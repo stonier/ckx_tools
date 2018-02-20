@@ -270,7 +270,7 @@ def populate_sources(base_path, file_list, uri_list, lookup_name_list, parallel_
         combined_yaml_contents['repositories'].update(new_yaml_contents['repositories'])
 
     # the vcstool way (alternative : subprocess it)
-    args = Args({'path': base_path, 'debug': False, 'workers': parallel_jobs, 'repos': True})
+    args = Args({'path': base_path, 'debug': False, 'workers': parallel_jobs, 'repos': True, 'retry': 2})
     repos = vcstool.commands.import_.get_repos_in_vcstool_format(combined_yaml_contents['repositories'])
     jobs = vcstool.commands.import_.generate_jobs(repos, args)  # need to wire up a special args here
     results = vcstool.executor.execute_jobs(jobs, show_progress=True, number_of_workers=parallel_jobs, debug_jobs=False)
